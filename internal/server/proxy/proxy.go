@@ -52,7 +52,7 @@ func Proxy(conf *config.Config, cache *redis.Client, host string) http.HandlerFu
 			upstreamResp, err = http.DefaultClient.Do(upstreamReq)
 			if err != nil {
 				log.Err(err).Msg("failed to forward to upstream")
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				http.Error(w, err.Error(), http.StatusServiceUnavailable)
 				return
 			}
 			defer func(Body io.ReadCloser) {
@@ -68,7 +68,7 @@ func Proxy(conf *config.Config, cache *redis.Client, host string) http.HandlerFu
 				}(upstreamResp.Body)
 				if err != nil {
 					log.Err(err).Msg("failed to set cache response")
-					http.Error(w, err.Error(), http.StatusInternalServerError)
+					http.Error(w, err.Error(), http.StatusServiceUnavailable)
 					return
 				}
 			} else {
