@@ -60,7 +60,7 @@ func Proxy(host string) http.HandlerFunc {
 				_ = resp.Body.Close()
 			}()
 
-			if resp.StatusCode < 300 {
+			if resp.StatusCode < 400 {
 				resp, err = cache.SetCache(ctx, u, req, resp)
 				if err != nil {
 					log.Err(err).Msg("failed to set cache response")
