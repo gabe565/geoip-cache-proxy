@@ -60,17 +60,19 @@ func ListenAndServe(ctx context.Context, conf *config.Config, cache *redis.Clien
 
 func NewDownload(conf *config.Config, cache *redis.Client) *http.Server {
 	return &http.Server{
-		Addr:              conf.DownloadAddr,
-		Handler:           middleware.Log(proxy.Proxy(conf, cache, conf.DownloadHost)),
-		ReadHeaderTimeout: 3 * time.Second,
+		Addr:           conf.DownloadAddr,
+		Handler:        middleware.Log(proxy.Proxy(conf, cache, conf.DownloadHost)),
+		ReadTimeout:    10 * time.Second,
+		MaxHeaderBytes: 1024 * 1024, // 1MiB
 	}
 }
 
 func NewUpdates(conf *config.Config, cache *redis.Client) *http.Server {
 	return &http.Server{
-		Addr:              conf.UpdatesAddr,
-		Handler:           middleware.Log(proxy.Proxy(conf, cache, conf.UpdatesHost)),
-		ReadHeaderTimeout: 3 * time.Second,
+		Addr:           conf.UpdatesAddr,
+		Handler:        middleware.Log(proxy.Proxy(conf, cache, conf.UpdatesHost)),
+		ReadTimeout:    10 * time.Second,
+		MaxHeaderBytes: 1024 * 1024, // 1MiB
 	}
 }
 
@@ -79,8 +81,9 @@ func NewDebug(conf *config.Config, cache *redis.Client) *http.Server {
 		http.HandleFunc("/livez", api.Live())
 		http.HandleFunc("/readyz", api.Ready(cache))
 		return &http.Server{
-			Addr:              conf.DebugAddr,
-			ReadHeaderTimeout: 3 * time.Second,
+			Addr:           conf.DebugAddr,
+			ReadTimeout:    10 * time.Second,
+			MaxHeaderBytes: 1024 * 1024, // 1MiB
 		}
 	}
 	return nil
