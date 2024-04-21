@@ -13,9 +13,9 @@ const (
 	FlagRedisPassword = "redis-password"
 	FlagRedisDB       = "redis-db"
 
-	FlagUpdatesAddr = "updates-addr"
-	FlagUpdatesHost = "updates-host"
-
+	FlagHTTPTimeout  = "http-timeout"
+	FlagUpdatesAddr  = "updates-addr"
+	FlagUpdatesHost  = "updates-host"
 	FlagDownloadAddr = "download-addr"
 	FlagDownloadHost = "download-host"
 
@@ -33,9 +33,9 @@ func (c *Config) RegisterFlags(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&c.RedisPassword, FlagRedisPassword, c.RedisPassword, "Redis password")
 	cmd.Flags().IntVar(&c.RedisDB, FlagRedisDB, c.RedisDB, "Redis database")
 
+	cmd.Flags().DurationVar(&c.HTTPTimeout, FlagHTTPTimeout, c.HTTPTimeout, "HTTP request timeout")
 	cmd.Flags().StringVar(&c.UpdatesAddr, FlagUpdatesAddr, c.UpdatesAddr, "Listen address")
 	cmd.Flags().StringVar(&c.UpdatesHost, FlagUpdatesHost, c.UpdatesHost, "MaxMind updates host")
-
 	cmd.Flags().StringVar(&c.DownloadAddr, FlagDownloadAddr, c.DownloadAddr, "Listen address")
 	cmd.Flags().StringVar(&c.DownloadHost, FlagDownloadHost, c.DownloadHost, "MaxMind download host")
 

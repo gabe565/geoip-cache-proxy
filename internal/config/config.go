@@ -13,9 +13,9 @@ type Config struct {
 	RedisPassword string
 	RedisDB       int
 
-	UpdatesAddr string
-	UpdatesHost string
-
+	HTTPTimeout  time.Duration
+	UpdatesAddr  string
+	UpdatesHost  string
 	DownloadAddr string
 	DownloadHost string
 
@@ -32,9 +32,9 @@ func NewDefault() *Config {
 		RedisHost: "localhost",
 		RedisPort: 6379,
 
-		UpdatesAddr: ":8080",
-		UpdatesHost: "updates.maxmind.com",
-
+		HTTPTimeout:  30 * time.Second,
+		UpdatesAddr:  ":8080",
+		UpdatesHost:  "updates.maxmind.com",
 		DownloadAddr: ":8081",
 		DownloadHost: "download.maxmind.com",
 

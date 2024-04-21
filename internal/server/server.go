@@ -61,7 +61,7 @@ func ListenAndServe(ctx context.Context, conf *config.Config, cache *redis.Clien
 func NewDownload(conf *config.Config, cache *redis.Client) *http.Server {
 	return &http.Server{
 		Addr:           conf.DownloadAddr,
-		Handler:        middleware.Log(proxy.Proxy(conf, cache, conf.DownloadHost)),
+		Handler:        middleware.Log(middleware.Timeout(conf.HTTPTimeout, proxy.Proxy(conf, cache, conf.DownloadHost))),
 		ReadTimeout:    10 * time.Second,
 		MaxHeaderBytes: 1024 * 1024, // 1MiB
 	}
@@ -70,7 +70,7 @@ func NewDownload(conf *config.Config, cache *redis.Client) *http.Server {
 func NewUpdates(conf *config.Config, cache *redis.Client) *http.Server {
 	return &http.Server{
 		Addr:           conf.UpdatesAddr,
-		Handler:        middleware.Log(proxy.Proxy(conf, cache, conf.UpdatesHost)),
+		Handler:        middleware.Log(middleware.Timeout(conf.HTTPTimeout, proxy.Proxy(conf, cache, conf.UpdatesHost))),
 		ReadTimeout:    10 * time.Second,
 		MaxHeaderBytes: 1024 * 1024, // 1MiB
 	}
@@ -78,8 +78,8 @@ func NewUpdates(conf *config.Config, cache *redis.Client) *http.Server {
 
 func NewDebug(conf *config.Config, cache *redis.Client) *http.Server {
 	if conf.DebugAddr != "" {
-		http.HandleFunc("/livez", api.Live())
-		http.HandleFunc("/readyz", api.Ready(cache))
+		http.Handle("/livez", api.Live())
+		http.Handle("/readyz", middleware.Timeout(conf.HTTPTimeout, api.Ready(cache)))
 		return &http.Server{
 			Addr:           conf.DebugAddr,
 			ReadTimeout:    10 * time.Second,
