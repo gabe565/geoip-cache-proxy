@@ -1,12 +1,10 @@
 package proxy
 
 import (
-	"context"
 	"io"
 	"net"
 	"net/http"
 	"net/url"
-	"time"
 
 	"github.com/gabe565/geoip-cache-proxy/internal/cache"
 	"github.com/gabe565/geoip-cache-proxy/internal/server/consts"
@@ -15,13 +13,10 @@ import (
 
 func Proxy(host string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
-		defer cancel()
-
 		u := buildURL(host, r)
 		log := middleware.LogFromContext(r.Context()).With().Str("upstreamUrl", u.String()).Logger()
 
-		upstreamReq, err := http.NewRequestWithContext(ctx, r.Method, u.String(), r.Body)
+		upstreamReq, err := http.NewRequestWithContext(r.Context(), r.Method, u.String(), r.Body)
 		if err != nil {
 			log.Err(err).Msg("failed to create request")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -38,7 +33,7 @@ func Proxy(host string) http.HandlerFunc {
 
 		var cacheStatus CacheStatus
 		var upstreamResp *http.Response
-		if upstreamResp, err = cache.GetCache(ctx, u, upstreamReq); err == nil {
+		if upstreamResp, err = cache.GetCache(r.Context(), u, upstreamReq); err == nil {
 			log.Trace().Msg("using cached response")
 			cacheStatus = CacheHit
 			defer func(Body io.ReadCloser) {
@@ -65,7 +60,7 @@ func Proxy(host string) http.HandlerFunc {
 			}(upstreamResp.Body)
 
 			if upstreamResp.StatusCode < 400 {
-				upstreamResp, err = cache.SetCache(ctx, u, upstreamReq, upstreamResp)
+				upstreamResp, err = cache.SetCache(r.Context(), u, upstreamReq, upstreamResp)
 				defer func(Body io.ReadCloser) {
 					_, _ = io.Copy(io.Discard, upstreamResp.Body)
 					_ = Body.Close()
