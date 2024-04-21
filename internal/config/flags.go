@@ -1,8 +1,6 @@
 package config
 
 import (
-	"time"
-
 	"github.com/spf13/cobra"
 )
 
@@ -27,21 +25,21 @@ const (
 )
 
 func (c *Config) RegisterFlags(cmd *cobra.Command) {
-	cmd.Flags().StringVarP(&c.LogLevel, FlagLogLevel, "l", "info", "Log level (trace, debug, info, warn, error, fatal, panic)")
-	cmd.Flags().StringVar(&c.LogFormat, FlagLogFormat, "auto", "Log format (auto, color, plain, json)")
+	cmd.Flags().StringVarP(&c.LogLevel, FlagLogLevel, "l", c.LogLevel, "Log level (trace, debug, info, warn, error, fatal, panic)")
+	cmd.Flags().StringVar(&c.LogFormat, FlagLogFormat, c.LogFormat, "Log format (auto, color, plain, json)")
 
-	cmd.Flags().StringVar(&c.RedisHost, FlagRedisHost, "localhost", "Redis host")
-	cmd.Flags().Uint16Var(&c.RedisPort, FlagRedisPort, 6379, "Redis port")
-	cmd.Flags().StringVar(&c.RedisPassword, FlagRedisPassword, "", "Redis password")
-	cmd.Flags().IntVar(&c.RedisDB, FlagRedisDB, 0, "Redis database")
+	cmd.Flags().StringVar(&c.RedisHost, FlagRedisHost, c.RedisHost, "Redis host")
+	cmd.Flags().Uint16Var(&c.RedisPort, FlagRedisPort, c.RedisPort, "Redis port")
+	cmd.Flags().StringVar(&c.RedisPassword, FlagRedisPassword, c.RedisPassword, "Redis password")
+	cmd.Flags().IntVar(&c.RedisDB, FlagRedisDB, c.RedisDB, "Redis database")
 
-	cmd.Flags().StringVar(&c.UpdatesAddr, FlagUpdatesAddr, ":8080", "Listen address")
-	cmd.Flags().StringVar(&c.UpdatesHost, FlagUpdatesHost, "updates.maxmind.com", "MaxMind updates host")
+	cmd.Flags().StringVar(&c.UpdatesAddr, FlagUpdatesAddr, c.UpdatesAddr, "Listen address")
+	cmd.Flags().StringVar(&c.UpdatesHost, FlagUpdatesHost, c.UpdatesHost, "MaxMind updates host")
 
-	cmd.Flags().StringVar(&c.DownloadAddr, FlagDownloadAddr, ":8081", "Listen address")
-	cmd.Flags().StringVar(&c.DownloadHost, FlagDownloadHost, "download.maxmind.com", "MaxMind download host")
+	cmd.Flags().StringVar(&c.DownloadAddr, FlagDownloadAddr, c.DownloadAddr, "Listen address")
+	cmd.Flags().StringVar(&c.DownloadHost, FlagDownloadHost, c.DownloadHost, "MaxMind download host")
 
-	cmd.Flags().DurationVar(&c.CacheDuration, FlagCacheDuration, 24*time.Hour, "Length of time to cache MaxMind response")
+	cmd.Flags().DurationVar(&c.CacheDuration, FlagCacheDuration, c.CacheDuration, "Length of time to cache MaxMind response")
 
-	cmd.Flags().StringVar(&c.DebugAddr, FlagDebugAddr, ":6060", "Debug pprof listen address")
+	cmd.Flags().StringVar(&c.DebugAddr, FlagDebugAddr, c.DebugAddr, "Debug pprof listen address")
 }

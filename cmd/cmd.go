@@ -21,7 +21,7 @@ func New() *cobra.Command {
 		SilenceUsage:      true,
 		DisableAutoGenTag: true,
 	}
-	conf := &config.Config{}
+	conf := config.NewDefault()
 	conf.RegisterFlags(cmd)
 	config.RegisterCompletions(cmd)
 	cmd.SetContext(config.NewContext(context.Background(), conf))

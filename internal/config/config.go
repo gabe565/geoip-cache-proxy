@@ -23,3 +23,23 @@ type Config struct {
 
 	DebugAddr string
 }
+
+func NewDefault() *Config {
+	return &Config{
+		LogLevel:  "info",
+		LogFormat: "auto",
+
+		RedisHost: "localhost",
+		RedisPort: 6379,
+
+		UpdatesAddr: ":8080",
+		UpdatesHost: "updates.maxmind.com",
+
+		DownloadAddr: ":8081",
+		DownloadHost: "download.maxmind.com",
+
+		CacheDuration: 24 * time.Hour,
+
+		DebugAddr: ":6060",
+	}
+}
