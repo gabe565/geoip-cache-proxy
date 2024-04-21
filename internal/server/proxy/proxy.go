@@ -41,6 +41,10 @@ func Proxy(host string) http.HandlerFunc {
 		if upstreamResp, err = cache.GetCache(ctx, u, upstreamReq); err == nil {
 			log.Trace().Msg("using cached response")
 			cacheStatus = CacheHit
+			defer func(Body io.ReadCloser) {
+				_, _ = io.Copy(io.Discard, upstreamResp.Body)
+				_ = Body.Close()
+			}(upstreamResp.Body)
 		} else {
 			log.Trace().Msg("failed to get cached response")
 			upstreamResp = nil
@@ -55,13 +59,17 @@ func Proxy(host string) http.HandlerFunc {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			defer func() {
+			defer func(Body io.ReadCloser) {
 				_, _ = io.Copy(io.Discard, upstreamResp.Body)
-				_ = upstreamResp.Body.Close()
-			}()
+				_ = Body.Close()
+			}(upstreamResp.Body)
 
 			if upstreamResp.StatusCode < 400 {
 				upstreamResp, err = cache.SetCache(ctx, u, upstreamReq, upstreamResp)
+				defer func(Body io.ReadCloser) {
+					_, _ = io.Copy(io.Discard, upstreamResp.Body)
+					_ = Body.Close()
+				}(upstreamResp.Body)
 				if err != nil {
 					log.Err(err).Msg("failed to set cache response")
 					http.Error(w, err.Error(), http.StatusInternalServerError)

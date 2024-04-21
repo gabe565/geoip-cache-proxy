@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -56,6 +57,9 @@ func SetCache(ctx context.Context, u url.URL, req *http.Request, resp *http.Resp
 	if err != nil {
 		return nil, err
 	}
+
+	_, _ = io.Copy(io.Discard, resp.Body)
+	_ = resp.Body.Close()
 
 	if err := Client.Set(ctx, FormatCacheKey(u, req), b, 24*time.Hour).Err(); err != nil {
 		return nil, err
