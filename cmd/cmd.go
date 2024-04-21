@@ -12,12 +12,14 @@ import (
 
 func New() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:  "geoip-cache-proxy",
-		RunE: run,
+		Use:   "geoip-cache-proxy",
+		Short: "A GeoIP database caching proxy",
+		RunE:  run,
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 		SilenceErrors:     true,
 		SilenceUsage:      true,
+		DisableAutoGenTag: true,
 	}
 	conf := &config.Config{}
 	conf.RegisterFlags(cmd)

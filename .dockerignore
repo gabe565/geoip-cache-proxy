@@ -7,3 +7,5 @@
 Dockerfile
 README.md
 compose.yaml
+dist/
+docs/
