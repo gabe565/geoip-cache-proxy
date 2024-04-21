@@ -3,6 +3,9 @@ package cmd
 import (
 	"context"
 	"errors"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/gabe565/geoip-cache-proxy/internal/cache"
 	"github.com/gabe565/geoip-cache-proxy/internal/config"
@@ -40,9 +43,15 @@ func run(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	if err := cache.Connect(conf); err != nil {
+	ctx, cancel := signal.NotifyContext(cmd.Context(), os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
+	defer cancel()
+
+	if err := cache.Connect(ctx, conf); err != nil {
 		return err
 	}
+	defer func() {
+		_ = cache.Close()
+	}()
 
-	return server.ListenAndServe(conf)
+	return server.ListenAndServe(ctx, conf)
 }

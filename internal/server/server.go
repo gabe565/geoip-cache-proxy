@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"net/http"
 	_ "net/http/pprof" //nolint:gosec
 	"time"
@@ -13,27 +14,44 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func ListenAndServe(conf *config.Config) error {
-	var group errgroup.Group
+func ListenAndServe(ctx context.Context, conf *config.Config) error {
+	group, ctx := errgroup.WithContext(ctx)
 
+	download := NewDownload(conf)
 	group.Go(func() error {
-		server := NewDownload(conf)
 		log.Info().Str("address", conf.DownloadAddr).Msg("starting download server")
-		return server.ListenAndServe()
+		return download.ListenAndServe()
 	})
 
+	updates := NewUpdates(conf)
 	group.Go(func() error {
-		server := NewUpdates(conf)
 		log.Info().Str("address", conf.UpdatesAddr).Msg("starting updates server")
-		return server.ListenAndServe()
+		return updates.ListenAndServe()
 	})
 
-	group.Go(func() error {
-		if server := NewDebug(conf); server != nil {
+	debug := NewDebug(conf)
+	if debug != nil {
+		group.Go(func() error {
 			log.Info().Str("address", conf.DebugAddr).Msg("starting debug pprof server")
-			return server.ListenAndServe()
-		}
-		return nil
+			return debug.ListenAndServe()
+		})
+	}
+
+	<-ctx.Done()
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer shutdownCancel()
+
+	group.Go(func() error {
+		log.Info().Msg("stopping download server")
+		return download.Shutdown(shutdownCtx)
+	})
+	group.Go(func() error {
+		log.Info().Msg("stopping updates server")
+		return updates.Shutdown(shutdownCtx)
+	})
+	group.Go(func() error {
+		log.Info().Msg("stopping debug pprof server")
+		return debug.Shutdown(shutdownCtx)
 	})
 
 	return group.Wait()

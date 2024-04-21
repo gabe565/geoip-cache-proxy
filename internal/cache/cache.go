@@ -20,7 +20,7 @@ import (
 //nolint:gochecknoglobals
 var Client *redis.Client
 
-func Connect(conf *config.Config) error {
+func Connect(ctx context.Context, conf *config.Config) error {
 	addr := net.JoinHostPort(conf.RedisHost, strconv.Itoa(int(conf.RedisPort)))
 	Client = redis.NewClient(&redis.Options{
 		Addr:     addr,
@@ -28,13 +28,17 @@ func Connect(conf *config.Config) error {
 		DB:       conf.RedisDB,
 	})
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
 	if err := Client.Ping(ctx).Err(); err != nil {
 		return fmt.Errorf("failed to connect to redis: %w", err)
 	}
 	return nil
+}
+
+func Close() error {
+	return Client.Close()
 }
 
 func FormatCacheKey(u url.URL, req *http.Request) string {
