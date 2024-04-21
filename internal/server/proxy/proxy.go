@@ -26,6 +26,7 @@ func Proxy(host string) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		req.Header.Set("User-Agent", r.UserAgent())
 
 		if host, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
 			req.Header.Set("X-Forwarded-For", host)
