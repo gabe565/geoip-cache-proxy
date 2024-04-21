@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gabe565/geoip-cache-proxy/internal/config"
+	"github.com/gabe565/geoip-cache-proxy/internal/redis"
 	"github.com/gabe565/geoip-cache-proxy/internal/server/api"
 	"github.com/gabe565/geoip-cache-proxy/internal/server/middleware"
 	"github.com/gabe565/geoip-cache-proxy/internal/server/proxy"
@@ -14,22 +15,22 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func ListenAndServe(ctx context.Context, conf *config.Config) error {
+func ListenAndServe(ctx context.Context, conf *config.Config, cache *redis.Client) error {
 	group, ctx := errgroup.WithContext(ctx)
 
-	download := NewDownload(conf)
+	download := NewDownload(conf, cache)
 	group.Go(func() error {
 		log.Info().Str("address", conf.DownloadAddr).Msg("starting download server")
 		return download.ListenAndServe()
 	})
 
-	updates := NewUpdates(conf)
+	updates := NewUpdates(conf, cache)
 	group.Go(func() error {
 		log.Info().Str("address", conf.UpdatesAddr).Msg("starting updates server")
 		return updates.ListenAndServe()
 	})
 
-	debug := NewDebug(conf)
+	debug := NewDebug(conf, cache)
 	if debug != nil {
 		group.Go(func() error {
 			log.Info().Str("address", conf.DebugAddr).Msg("starting debug pprof server")
@@ -57,26 +58,26 @@ func ListenAndServe(ctx context.Context, conf *config.Config) error {
 	return group.Wait()
 }
 
-func NewDownload(conf *config.Config) *http.Server {
+func NewDownload(conf *config.Config, cache *redis.Client) *http.Server {
 	return &http.Server{
 		Addr:              conf.DownloadAddr,
-		Handler:           middleware.Log(proxy.Proxy(conf, conf.DownloadHost)),
+		Handler:           middleware.Log(proxy.Proxy(conf, cache, conf.DownloadHost)),
 		ReadHeaderTimeout: 3 * time.Second,
 	}
 }
 
-func NewUpdates(conf *config.Config) *http.Server {
+func NewUpdates(conf *config.Config, cache *redis.Client) *http.Server {
 	return &http.Server{
 		Addr:              conf.UpdatesAddr,
-		Handler:           middleware.Log(proxy.Proxy(conf, conf.UpdatesHost)),
+		Handler:           middleware.Log(proxy.Proxy(conf, cache, conf.UpdatesHost)),
 		ReadHeaderTimeout: 3 * time.Second,
 	}
 }
 
-func NewDebug(conf *config.Config) *http.Server {
+func NewDebug(conf *config.Config, cache *redis.Client) *http.Server {
 	if conf.DebugAddr != "" {
-		http.HandleFunc("/livez", api.Live)
-		http.HandleFunc("/readyz", api.Ready)
+		http.HandleFunc("/livez", api.Live())
+		http.HandleFunc("/readyz", api.Ready(cache))
 		return &http.Server{
 			Addr:              conf.DebugAddr,
 			ReadHeaderTimeout: 3 * time.Second,

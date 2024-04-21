@@ -1,4 +1,4 @@
-package cache
+package redis
 
 import (
 	"bufio"
@@ -18,12 +18,13 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-//nolint:gochecknoglobals
-var Client *redis.Client
+type Client struct {
+	*redis.Client
+}
 
-func Connect(ctx context.Context, conf *config.Config) error {
+func Connect(ctx context.Context, conf *config.Config) (*Client, error) {
 	addr := net.JoinHostPort(conf.RedisHost, strconv.Itoa(int(conf.RedisPort)))
-	Client = redis.NewClient(&redis.Options{
+	client := redis.NewClient(&redis.Options{
 		Addr:     addr,
 		Password: conf.RedisPassword,
 		DB:       conf.RedisDB,
@@ -32,25 +33,25 @@ func Connect(ctx context.Context, conf *config.Config) error {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	if err := Client.Ping(ctx).Err(); err != nil {
-		return fmt.Errorf("failed to connect to redis: %w", err)
+	if err := client.Ping(ctx).Err(); err != nil {
+		return nil, fmt.Errorf("failed to connect to redis: %w", err)
 	}
 
 	log.Info().Str("addr", addr).Int("db", conf.RedisDB).Msg("connected to redis")
-	return nil
+	return &Client{client}, nil
 }
 
-func Close() error {
+func (c *Client) Close() error {
 	log.Info().Msg("disconnecting from redis")
-	return Client.Close()
+	return c.Client.Close()
 }
 
 func FormatCacheKey(u url.URL, req *http.Request) string {
 	return req.Method + "_" + u.String()
 }
 
-func GetCache(ctx context.Context, u url.URL, req *http.Request) (*http.Response, error) {
-	b, err := Client.Get(ctx, FormatCacheKey(u, req)).Bytes()
+func (c *Client) GetCache(ctx context.Context, u url.URL, req *http.Request) (*http.Response, error) {
+	b, err := c.Get(ctx, FormatCacheKey(u, req)).Bytes()
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +64,7 @@ func GetCache(ctx context.Context, u url.URL, req *http.Request) (*http.Response
 	return resp, nil
 }
 
-func SetCache(ctx context.Context, u url.URL, req *http.Request, resp *http.Response, expiration time.Duration) (*http.Response, error) {
+func (c *Client) SetCache(ctx context.Context, u url.URL, req *http.Request, resp *http.Response, expiration time.Duration) (*http.Response, error) {
 	b, err := httputil.DumpResponse(resp, true)
 	if err != nil {
 		return nil, err
@@ -72,7 +73,7 @@ func SetCache(ctx context.Context, u url.URL, req *http.Request, resp *http.Resp
 	_, _ = io.Copy(io.Discard, resp.Body)
 	_ = resp.Body.Close()
 
-	if err := Client.Set(ctx, FormatCacheKey(u, req), b, expiration).Err(); err != nil {
+	if err := c.Set(ctx, FormatCacheKey(u, req), b, expiration).Err(); err != nil {
 		return nil, err
 	}
 

@@ -6,13 +6,13 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/gabe565/geoip-cache-proxy/internal/cache"
 	"github.com/gabe565/geoip-cache-proxy/internal/config"
+	"github.com/gabe565/geoip-cache-proxy/internal/redis"
 	"github.com/gabe565/geoip-cache-proxy/internal/server/consts"
 	"github.com/gabe565/geoip-cache-proxy/internal/server/middleware"
 )
 
-func Proxy(conf *config.Config, host string) http.HandlerFunc {
+func Proxy(conf *config.Config, cache *redis.Client, host string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		u := buildURL(host, r)
 		log := middleware.LogFromContext(r.Context()).With().Str("upstreamUrl", u.String()).Logger()

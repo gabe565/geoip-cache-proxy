@@ -7,8 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/gabe565/geoip-cache-proxy/internal/cache"
 	"github.com/gabe565/geoip-cache-proxy/internal/config"
+	"github.com/gabe565/geoip-cache-proxy/internal/redis"
 	"github.com/gabe565/geoip-cache-proxy/internal/server"
 	"github.com/spf13/cobra"
 )
@@ -46,12 +46,13 @@ func run(cmd *cobra.Command, _ []string) error {
 	ctx, cancel := signal.NotifyContext(cmd.Context(), os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
 	defer cancel()
 
-	if err := cache.Connect(ctx, conf); err != nil {
+	cache, err := redis.Connect(ctx, conf)
+	if err != nil {
 		return err
 	}
-	defer func() {
-		_ = cache.Close()
-	}()
+	defer func(c *redis.Client) {
+		_ = c.Close()
+	}(cache)
 
-	return server.ListenAndServe(ctx, conf)
+	return server.ListenAndServe(ctx, conf, cache)
 }
