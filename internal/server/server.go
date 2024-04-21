@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gabe565/geoip-cache-proxy/internal/config"
+	"github.com/gabe565/geoip-cache-proxy/internal/server/api"
 	"github.com/gabe565/geoip-cache-proxy/internal/server/middleware"
 	"github.com/gabe565/geoip-cache-proxy/internal/server/proxy"
 	"github.com/rs/zerolog/log"
@@ -56,6 +57,8 @@ func NewUpdates(conf *config.Config) *http.Server {
 
 func NewDebug(conf *config.Config) *http.Server {
 	if conf.DebugAddr != "" {
+		http.HandleFunc("/livez", api.Live)
+		http.HandleFunc("/readyz", api.Ready)
 		return &http.Server{
 			Addr:              conf.DebugAddr,
 			ReadHeaderTimeout: 3 * time.Second,
