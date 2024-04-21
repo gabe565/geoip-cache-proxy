@@ -27,12 +27,13 @@ func Proxy(host string) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		req.Header.Set("User-Agent", r.UserAgent())
-
 		if host, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
 			req.Header.Set("X-Forwarded-For", host)
 		} else {
 			log.Warn().Err(err).Msg("failed to split remote address")
+		}
+		for k := range r.Header {
+			req.Header.Set(k, r.Header.Get(k))
 		}
 
 		var cacheStatus CacheStatus
