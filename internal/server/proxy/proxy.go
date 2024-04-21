@@ -9,7 +9,8 @@ import (
 	"time"
 
 	"github.com/gabe565/geoip-cache-proxy/internal/cache"
-	"github.com/rs/zerolog/log"
+	"github.com/gabe565/geoip-cache-proxy/internal/server/consts"
+	"github.com/gabe565/geoip-cache-proxy/internal/server/middleware"
 )
 
 func Proxy(host string) http.HandlerFunc {
@@ -18,7 +19,7 @@ func Proxy(host string) http.HandlerFunc {
 		defer cancel()
 
 		u := buildURL(host, r)
-		log := log.With().Str("url", u.String()).Str("method", r.Method).Logger()
+		log := middleware.LogFromContext(r.Context()).With().Str("upstreamUrl", u.String()).Logger()
 
 		req, err := http.NewRequestWithContext(ctx, r.Method, u.String(), r.Body)
 		if err != nil {
@@ -73,7 +74,8 @@ func Proxy(host string) http.HandlerFunc {
 		for k := range resp.Header {
 			w.Header().Set(k, resp.Header.Get(k))
 		}
-		w.Header().Set("X-Proxy-Cache-Status", cacheStatus.String())
+		w.Header().Set(consts.UpstreamURLHeader, u.String())
+		w.Header().Set(consts.CacheStatusHeader, cacheStatus.String())
 		w.WriteHeader(resp.StatusCode)
 		_, _ = io.Copy(w, resp.Body)
 	}
