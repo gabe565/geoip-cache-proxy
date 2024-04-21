@@ -42,18 +42,14 @@ func Proxy(conf *config.Config, cache *redis.Client, host string) http.HandlerFu
 				_, _ = io.Copy(io.Discard, upstreamResp.Body)
 				_ = Body.Close()
 			}(upstreamResp.Body)
-		} else {
-			upstreamResp = nil
-			if !errors.Is(err, redis.ErrNotExist) {
-				log.Trace().Err(err).Msg("failed to get cached response")
-				http.Error(w, err.Error(), http.StatusServiceUnavailable)
-				return
-			}
+		} else if !errors.Is(err, redis.ErrNotExist) {
+			log.Trace().Err(err).Msg("failed to get cached response")
+			http.Error(w, err.Error(), http.StatusServiceUnavailable)
+			return
 		}
 
-		if upstreamResp == nil {
+		if cacheStatus == CacheMiss {
 			log.Trace().Msg("forwarding request to upstream")
-			cacheStatus = CacheMiss
 			upstreamResp, err = http.DefaultClient.Do(upstreamReq)
 			if err != nil {
 				log.Err(err).Msg("failed to forward to upstream")
