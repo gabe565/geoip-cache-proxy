@@ -7,8 +7,6 @@ import (
 )
 
 const (
-	EnvPrefix = "GEOIP_"
-
 	FlagLogLevel  = "log-level"
 	FlagLogFormat = "log-format"
 
