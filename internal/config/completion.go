@@ -28,6 +28,7 @@ func RegisterCompletions(cmd *cobra.Command) {
 		FlagDownloadAddr,
 		FlagDownloadHost,
 		FlagCacheDuration,
+		FlagDebugAddr,
 	}
 	for _, name := range npCompFlags {
 		if err := cmd.RegisterFlagCompletionFunc(name, cobra.NoFileCompletions); err != nil {

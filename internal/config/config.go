@@ -19,4 +19,6 @@ type Config struct {
 	DownloadHost string
 
 	CacheDuration time.Duration
+
+	DebugAddr string
 }

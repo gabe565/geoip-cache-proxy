@@ -2,6 +2,7 @@ package server
 
 import (
 	"net/http"
+	_ "net/http/pprof" //nolint:gosec
 	"time"
 
 	"github.com/gabe565/geoip-cache-proxy/internal/config"
@@ -26,6 +27,14 @@ func ListenAndServe(conf *config.Config) error {
 		return server.ListenAndServe()
 	})
 
+	group.Go(func() error {
+		if server := NewDebug(conf); server != nil {
+			log.Info().Str("address", conf.DebugAddr).Msg("starting debug pprof server")
+			return server.ListenAndServe()
+		}
+		return nil
+	})
+
 	return group.Wait()
 }
 
@@ -43,4 +52,14 @@ func NewUpdates(conf *config.Config) *http.Server {
 		Handler:           middleware.Log(proxy.Proxy(conf.UpdatesHost)),
 		ReadHeaderTimeout: 3 * time.Second,
 	}
+}
+
+func NewDebug(conf *config.Config) *http.Server {
+	if conf.DebugAddr != "" {
+		return &http.Server{
+			Addr:              conf.DebugAddr,
+			ReadHeaderTimeout: 3 * time.Second,
+		}
+	}
+	return nil
 }

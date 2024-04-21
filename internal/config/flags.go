@@ -23,6 +23,8 @@ const (
 	FlagDownloadHost = "download-host"
 
 	FlagCacheDuration = "cache-duration"
+
+	FlagDebugAddr = "debug-addr"
 )
 
 func (c *Config) RegisterFlags(cmd *cobra.Command) {
@@ -40,4 +42,6 @@ func (c *Config) RegisterFlags(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&c.DownloadHost, FlagDownloadHost, "download.maxmind.com", "MaxMind download host")
 
 	cmd.Flags().DurationVar(&c.CacheDuration, FlagCacheDuration, 24*time.Hour, "Length of time to cache MaxMind response")
+
+	cmd.Flags().StringVar(&c.DebugAddr, FlagDebugAddr, ":6060", "Debug pprof listen address")
 }
