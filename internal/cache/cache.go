@@ -39,12 +39,12 @@ func FormatCacheKey(u url.URL, req *http.Request) string {
 }
 
 func GetCache(ctx context.Context, u url.URL, req *http.Request) (*http.Response, error) {
-	v, err := Client.Get(ctx, FormatCacheKey(u, req)).Result()
+	b, err := Client.Get(ctx, FormatCacheKey(u, req)).Bytes()
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := http.ReadResponse(bufio.NewReader(bytes.NewBufferString(v)), req)
+	resp, err := http.ReadResponse(bufio.NewReader(bytes.NewReader(b)), req)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func SetCache(ctx context.Context, u url.URL, req *http.Request, resp *http.Resp
 		return nil, err
 	}
 
-	resp, err = http.ReadResponse(bufio.NewReader(bytes.NewBuffer(b)), req)
+	resp, err = http.ReadResponse(bufio.NewReader(bytes.NewReader(b)), req)
 	if err != nil {
 		return nil, err
 	}
