@@ -15,6 +15,7 @@ import (
 
 	"github.com/gabe565/geoip-cache-proxy/internal/config"
 	"github.com/redis/go-redis/v9"
+	"github.com/rs/zerolog/log"
 )
 
 //nolint:gochecknoglobals
@@ -34,10 +35,13 @@ func Connect(ctx context.Context, conf *config.Config) error {
 	if err := Client.Ping(ctx).Err(); err != nil {
 		return fmt.Errorf("failed to connect to redis: %w", err)
 	}
+
+	log.Info().Str("addr", addr).Int("db", conf.RedisDB).Msg("connected to redis")
 	return nil
 }
 
 func Close() error {
+	log.Info().Msg("disconnecting from redis")
 	return Client.Close()
 }
 
