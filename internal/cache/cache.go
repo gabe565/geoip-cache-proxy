@@ -52,7 +52,7 @@ func GetCache(ctx context.Context, u url.URL, req *http.Request) (*http.Response
 	return resp, nil
 }
 
-func SetCache(ctx context.Context, u url.URL, req *http.Request, resp *http.Response) (*http.Response, error) {
+func SetCache(ctx context.Context, u url.URL, req *http.Request, resp *http.Response, expiration time.Duration) (*http.Response, error) {
 	b, err := httputil.DumpResponse(resp, true)
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ func SetCache(ctx context.Context, u url.URL, req *http.Request, resp *http.Resp
 	_, _ = io.Copy(io.Discard, resp.Body)
 	_ = resp.Body.Close()
 
-	if err := Client.Set(ctx, FormatCacheKey(u, req), b, 24*time.Hour).Err(); err != nil {
+	if err := Client.Set(ctx, FormatCacheKey(u, req), b, expiration).Err(); err != nil {
 		return nil, err
 	}
 

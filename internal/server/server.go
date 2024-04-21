@@ -41,7 +41,7 @@ func ListenAndServe(conf *config.Config) error {
 func NewDownload(conf *config.Config) *http.Server {
 	return &http.Server{
 		Addr:              conf.DownloadAddr,
-		Handler:           middleware.Log(proxy.Proxy(conf.DownloadHost)),
+		Handler:           middleware.Log(proxy.Proxy(conf, conf.DownloadHost)),
 		ReadHeaderTimeout: 3 * time.Second,
 	}
 }
@@ -49,7 +49,7 @@ func NewDownload(conf *config.Config) *http.Server {
 func NewUpdates(conf *config.Config) *http.Server {
 	return &http.Server{
 		Addr:              conf.UpdatesAddr,
-		Handler:           middleware.Log(proxy.Proxy(conf.UpdatesHost)),
+		Handler:           middleware.Log(proxy.Proxy(conf, conf.UpdatesHost)),
 		ReadHeaderTimeout: 3 * time.Second,
 	}
 }
