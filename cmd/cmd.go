@@ -13,17 +13,21 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var version = "beta"
+
 func New() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "geoip-cache-proxy",
-		Short: "A GeoIP database caching proxy",
-		RunE:  run,
+		Use:     "geoip-cache-proxy",
+		Short:   "A GeoIP database caching proxy",
+		RunE:    run,
+		Version: buildVersion(version),
 
 		ValidArgsFunction: cobra.NoFileCompletions,
 		SilenceErrors:     true,
 		SilenceUsage:      true,
 		DisableAutoGenTag: true,
 	}
+	cmd.InitDefaultVersionFlag()
 	conf := config.NewDefault()
 	conf.RegisterFlags(cmd)
 	config.RegisterCompletions(cmd)

@@ -23,5 +23,6 @@ geoip-cache-proxy [flags]
       --redis-port uint16         Redis port (default 6379)
       --updates-addr string       Listen address (default ":8080")
       --updates-host string       MaxMind updates host (default "updates.maxmind.com")
+  -v, --version                   version for geoip-cache-proxy
 ```
 
