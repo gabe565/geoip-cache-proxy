@@ -49,7 +49,7 @@ func (c *Client) Close() error {
 }
 
 func FormatCacheKey(u url.URL, req *http.Request) string {
-	key := req.Method + " " + u.String()
+	key := req.Method + " " + u.String() + " " + req.Header.Get("Authorization")
 	sum := sha256.Sum256([]byte(key))
 	return hex.EncodeToString(sum[:])
 }
