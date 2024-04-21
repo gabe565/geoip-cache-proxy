@@ -14,9 +14,11 @@ const EnvPrefix = "GEOIP_"
 func (c *Config) Load(cmd *cobra.Command) error {
 	var errs []error
 	cmd.Flags().VisitAll(func(f *pflag.Flag) {
-		if val, ok := os.LookupEnv(EnvName(f.Name)); !f.Changed && ok {
-			if err := f.Value.Set(val); err != nil {
-				errs = append(errs, err)
+		if !f.Changed {
+			if val, ok := os.LookupEnv(EnvName(f.Name)); ok {
+				if err := f.Value.Set(val); err != nil {
+					errs = append(errs, err)
+				}
 			}
 		}
 	})
