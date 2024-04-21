@@ -3,7 +3,7 @@ services:
     image: ghcr.io/gabe565/geoip-cache-proxy
     build: .
     environment:
-      GEOIP_REDIS_ADDR: redis:6379
+      GEOIP_REDIS_HOST: redis
     depends_on:
       redis:
         condition: service_started

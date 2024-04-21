@@ -8,7 +8,8 @@ type Config struct {
 	LogLevel  string
 	LogFormat string
 
-	RedisAddr     string
+	RedisHost     string
+	RedisPort     uint16
 	RedisPassword string
 	RedisDB       int
 

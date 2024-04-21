@@ -6,9 +6,11 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/gabe565/geoip-cache-proxy/internal/config"
@@ -19,8 +21,9 @@ import (
 var Client *redis.Client
 
 func Connect(conf *config.Config) error {
+	addr := net.JoinHostPort(conf.RedisHost, strconv.Itoa(int(conf.RedisPort)))
 	Client = redis.NewClient(&redis.Options{
-		Addr:     conf.RedisAddr,
+		Addr:     addr,
 		Password: conf.RedisPassword,
 		DB:       conf.RedisDB,
 	})
