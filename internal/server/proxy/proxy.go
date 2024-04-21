@@ -21,47 +21,47 @@ func Proxy(host string) http.HandlerFunc {
 		u := buildURL(host, r)
 		log := middleware.LogFromContext(r.Context()).With().Str("upstreamUrl", u.String()).Logger()
 
-		req, err := http.NewRequestWithContext(ctx, r.Method, u.String(), r.Body)
+		upstreamReq, err := http.NewRequestWithContext(ctx, r.Method, u.String(), r.Body)
 		if err != nil {
 			log.Err(err).Msg("failed to create request")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		if host, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
-			req.Header.Set("X-Forwarded-For", host)
+			upstreamReq.Header.Set("X-Forwarded-For", host)
 		} else {
 			log.Warn().Err(err).Msg("failed to split remote address")
 		}
 		for k := range r.Header {
-			req.Header.Set(k, r.Header.Get(k))
+			upstreamReq.Header.Set(k, r.Header.Get(k))
 		}
 
 		var cacheStatus CacheStatus
-		var resp *http.Response
-		if resp, err = cache.GetCache(ctx, u, req); err == nil {
+		var upstreamResp *http.Response
+		if upstreamResp, err = cache.GetCache(ctx, u, upstreamReq); err == nil {
 			log.Trace().Msg("using cached response")
 			cacheStatus = CacheHit
 		} else {
 			log.Trace().Msg("failed to get cached response")
-			resp = nil
+			upstreamResp = nil
 		}
 
-		if resp == nil {
+		if upstreamResp == nil {
 			log.Trace().Msg("forwarding request to upstream")
 			cacheStatus = CacheMiss
-			resp, err = http.DefaultClient.Do(req)
+			upstreamResp, err = http.DefaultClient.Do(upstreamReq)
 			if err != nil {
 				log.Err(err).Msg("failed to forward to upstream")
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 			defer func() {
-				_, _ = io.Copy(io.Discard, resp.Body)
-				_ = resp.Body.Close()
+				_, _ = io.Copy(io.Discard, upstreamResp.Body)
+				_ = upstreamResp.Body.Close()
 			}()
 
-			if resp.StatusCode < 400 {
-				resp, err = cache.SetCache(ctx, u, req, resp)
+			if upstreamResp.StatusCode < 400 {
+				upstreamResp, err = cache.SetCache(ctx, u, upstreamReq, upstreamResp)
 				if err != nil {
 					log.Err(err).Msg("failed to set cache response")
 					http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -72,13 +72,13 @@ func Proxy(host string) http.HandlerFunc {
 			}
 		}
 
-		for k := range resp.Header {
-			w.Header().Set(k, resp.Header.Get(k))
+		for k := range upstreamResp.Header {
+			w.Header().Set(k, upstreamResp.Header.Get(k))
 		}
 		w.Header().Set(consts.UpstreamURLHeader, u.String())
 		w.Header().Set(consts.CacheStatusHeader, cacheStatus.String())
-		w.WriteHeader(resp.StatusCode)
-		_, _ = io.Copy(w, resp.Body)
+		w.WriteHeader(upstreamResp.StatusCode)
+		_, _ = io.Copy(w, upstreamResp.Body)
 	}
 }
 
