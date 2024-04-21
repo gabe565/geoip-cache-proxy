@@ -8,7 +8,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"io"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -74,23 +73,15 @@ func (c *Client) GetCache(ctx context.Context, u url.URL, req *http.Request) (*h
 	return resp, nil
 }
 
-func (c *Client) SetCache(ctx context.Context, u url.URL, req *http.Request, resp *http.Response, expiration time.Duration) (*http.Response, error) {
+func (c *Client) SetCache(ctx context.Context, u url.URL, req *http.Request, resp *http.Response, expiration time.Duration) error {
 	b, err := httputil.DumpResponse(resp, true)
 	if err != nil {
-		return nil, err
+		return err
 	}
-
-	_, _ = io.Copy(io.Discard, resp.Body)
-	_ = resp.Body.Close()
 
 	if err := c.Set(ctx, FormatCacheKey(u, req), b, expiration).Err(); err != nil {
-		return nil, err
+		return err
 	}
 
-	resp, err = http.ReadResponse(bufio.NewReader(bytes.NewReader(b)), req)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
+	return nil
 }
