@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"net"
@@ -47,7 +49,9 @@ func (c *Client) Close() error {
 }
 
 func FormatCacheKey(u url.URL, req *http.Request) string {
-	return req.Method + "_" + u.String()
+	key := req.Method + " " + u.String()
+	sum := sha256.Sum256([]byte(key))
+	return hex.EncodeToString(sum[:])
 }
 
 func (c *Client) GetCache(ctx context.Context, u url.URL, req *http.Request) (*http.Response, error) {
