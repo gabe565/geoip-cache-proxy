@@ -1,0 +1,28 @@
+services:
+  app:
+    image: ghcr.io/gabe565/geoip-cache-proxy
+    build: .
+    environment:
+      GEOIP_REDIS_ADDR: redis:6379
+    depends_on:
+      redis:
+        condition: service_started
+    read_only: true
+    ports:
+      - 127.0.0.1:8080:8080
+      - 127.0.0.1:8081:8081
+    develop:
+      watch:
+        - action: rebuild
+          path: /go.*
+        - action: rebuild
+          path: ./main.go
+        - action: rebuild
+          path: ./cmd
+        - action: rebuild
+          path: ./internal
+
+  redis:
+    image: redis:alpine
+    ports:
+      - 127.0.0.1:6379:6379
