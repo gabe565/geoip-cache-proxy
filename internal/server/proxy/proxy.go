@@ -46,7 +46,7 @@ func Proxy(host string) http.HandlerFunc {
 				_ = Body.Close()
 			}(upstreamResp.Body)
 		} else {
-			log.Trace().Msg("failed to get cached response")
+			log.Trace().Err(err).Msg("failed to get cached response")
 			upstreamResp = nil
 		}
 
