@@ -14,6 +14,7 @@ const (
 
 	FlagRedisAddr     = "redis-addr"
 	FlagRedisPassword = "redis-password"
+	FlagRedisDB       = "redis-db"
 
 	FlagUpdatesAddr = "updates-addr"
 	FlagUpdatesHost = "updates-host"
@@ -30,6 +31,7 @@ func (c *Config) RegisterFlags(cmd *cobra.Command) {
 
 	cmd.Flags().StringVar(&c.RedisAddr, FlagRedisAddr, "localhost:6379", "Redis address")
 	cmd.Flags().StringVar(&c.RedisPassword, FlagRedisPassword, "", "Redis password")
+	cmd.Flags().IntVar(&c.RedisDB, FlagRedisDB, 0, "Redis database")
 
 	cmd.Flags().StringVar(&c.UpdatesAddr, FlagUpdatesAddr, ":8080", "Listen address")
 	cmd.Flags().StringVar(&c.UpdatesHost, FlagUpdatesHost, "updates.maxmind.com", "MaxMind updates host")

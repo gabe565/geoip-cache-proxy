@@ -21,6 +21,7 @@ func Connect(conf *config.Config) error {
 	Client = redis.NewClient(&redis.Options{
 		Addr:     conf.RedisAddr,
 		Password: conf.RedisPassword,
+		DB:       conf.RedisDB,
 	})
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

@@ -22,6 +22,7 @@ func RegisterCompletions(cmd *cobra.Command) {
 	npCompFlags := []string{
 		FlagRedisAddr,
 		FlagRedisPassword,
+		FlagRedisDB,
 		FlagUpdatesAddr,
 		FlagUpdatesHost,
 		FlagDownloadAddr,
