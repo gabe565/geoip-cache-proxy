@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -54,9 +55,14 @@ func FormatCacheKey(u url.URL, req *http.Request) string {
 	return hex.EncodeToString(sum[:])
 }
 
+var ErrNotExist = errors.New("key not found")
+
 func (c *Client) GetCache(ctx context.Context, u url.URL, req *http.Request) (*http.Response, error) {
 	b, err := c.Get(ctx, FormatCacheKey(u, req)).Bytes()
 	if err != nil {
+		if redis.HasErrorPrefix(err, "redis: nil") {
+			return nil, ErrNotExist
+		}
 		return nil, err
 	}
 

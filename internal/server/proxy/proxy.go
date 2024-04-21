@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"errors"
 	"io"
 	"net"
 	"net/http"
@@ -42,8 +43,12 @@ func Proxy(conf *config.Config, cache *redis.Client, host string) http.HandlerFu
 				_ = Body.Close()
 			}(upstreamResp.Body)
 		} else {
-			log.Trace().Err(err).Msg("failed to get cached response")
 			upstreamResp = nil
+			if !errors.Is(err, redis.ErrNotExist) {
+				log.Trace().Err(err).Msg("failed to get cached response")
+				http.Error(w, err.Error(), http.StatusServiceUnavailable)
+				return
+			}
 		}
 
 		if upstreamResp == nil {
