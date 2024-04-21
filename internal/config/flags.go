@@ -26,7 +26,7 @@ const (
 
 func (c *Config) RegisterFlags(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&c.LogLevel, FlagLogLevel, "l", "info", "Log level (trace, debug, info, warn, error, fatal, panic)")
-	cmd.Flags().StringVar(&c.LogFormat, FlagLogFormat, "color", "Log format (auto, color, plain, json)")
+	cmd.Flags().StringVar(&c.LogFormat, FlagLogFormat, "auto", "Log format (auto, color, plain, json)")
 
 	cmd.Flags().StringVar(&c.RedisAddr, FlagRedisAddr, "localhost:6379", "Redis address")
 	cmd.Flags().StringVar(&c.RedisPassword, FlagRedisPassword, "", "Redis password")
