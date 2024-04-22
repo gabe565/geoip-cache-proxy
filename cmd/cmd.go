@@ -50,13 +50,11 @@ func run(cmd *cobra.Command, _ []string) error {
 	ctx, cancel := signal.NotifyContext(cmd.Context(), os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
 	defer cancel()
 
-	cache, err := redis.Connect(ctx, conf)
+	cache, err := redis.Connect(conf)
 	if err != nil {
 		return err
 	}
-	defer func(c *redis.Client) {
-		_ = c.Close()
-	}(cache)
+	defer cache.Close()
 
 	return server.ListenAndServe(ctx, conf, cache)
 }

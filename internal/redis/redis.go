@@ -2,12 +2,10 @@ package redis
 
 import (
 	"bufio"
-	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -16,36 +14,37 @@ import (
 	"time"
 
 	"github.com/gabe565/geoip-cache-proxy/internal/config"
-	"github.com/redis/go-redis/v9"
+	"github.com/redis/rueidis"
 	"github.com/rs/zerolog/log"
 )
 
 type Client struct {
-	*redis.Client
+	rueidis.Client
 }
 
-func Connect(ctx context.Context, conf *config.Config) (*Client, error) {
+func Connect(conf *config.Config) (*Client, error) {
 	addr := net.JoinHostPort(conf.RedisHost, strconv.Itoa(int(conf.RedisPort)))
-	client := redis.NewClient(&redis.Options{
-		Addr:     addr,
-		Password: conf.RedisPassword,
-		DB:       conf.RedisDB,
+	client, err := rueidis.NewClient(rueidis.ClientOption{
+		InitAddress:  []string{addr},
+		Password:     conf.RedisPassword,
+		SelectDB:     conf.RedisDB,
+		DisableCache: true,
 	})
-
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
-
-	if err := client.Ping(ctx).Err(); err != nil {
-		return nil, fmt.Errorf("failed to connect to redis: %w", err)
+	if err != nil {
+		return nil, err
 	}
 
 	log.Info().Str("addr", addr).Int("db", conf.RedisDB).Msg("connected to redis")
 	return &Client{client}, nil
 }
 
-func (c *Client) Close() error {
+func (c *Client) Close() {
 	log.Info().Msg("disconnecting from redis")
-	return c.Client.Close()
+	c.Client.Close()
+}
+
+func (c *Client) Ping(ctx context.Context) error {
+	return c.Do(ctx, c.B().Ping().Build()).Error()
 }
 
 func FormatCacheKey(u url.URL, req *http.Request) string {
@@ -60,15 +59,18 @@ func FormatCacheKey(u url.URL, req *http.Request) string {
 var ErrNotExist = errors.New("key not found")
 
 func (c *Client) GetCache(ctx context.Context, u url.URL, req *http.Request) (*http.Response, error) {
-	b, err := c.Get(ctx, FormatCacheKey(u, req)).Bytes()
+	r, err := c.Do(ctx, c.B().Get().Key(FormatCacheKey(u, req)).Build()).AsReader()
 	if err != nil {
-		if redis.HasErrorPrefix(err, "redis: nil") {
-			return nil, ErrNotExist
+		var redisErr *rueidis.RedisError
+		if errors.As(err, &redisErr) {
+			if redisErr.IsNil() {
+				return nil, ErrNotExist
+			}
 		}
 		return nil, err
 	}
 
-	resp, err := http.ReadResponse(bufio.NewReader(bytes.NewReader(b)), req)
+	resp, err := http.ReadResponse(bufio.NewReader(r), req)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +84,9 @@ func (c *Client) SetCache(ctx context.Context, u url.URL, req *http.Request, res
 		return err
 	}
 
-	if err := c.Set(ctx, FormatCacheKey(u, req), b, expiration).Err(); err != nil {
+	if err := c.Do(ctx,
+		c.B().Set().Key(FormatCacheKey(u, req)).Value(rueidis.BinaryString(b)).Ex(expiration).Build(),
+	).Error(); err != nil {
 		return err
 	}
 
