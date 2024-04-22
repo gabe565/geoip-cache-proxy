@@ -18,7 +18,7 @@ func Live() http.HandlerFunc {
 func Ready(cache *redis.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
-		if err := cache.Ping(r.Context()).Err(); err != nil {
+		if err := cache.Ping(r.Context()); err != nil {
 			err = fmt.Errorf("failed to connect to redis: %w", err)
 			log.Err(err).Msg("readiness check failed")
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)
