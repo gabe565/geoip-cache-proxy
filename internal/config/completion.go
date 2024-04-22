@@ -28,6 +28,8 @@ func RegisterCompletions(cmd *cobra.Command) {
 		FlagUpdatesHost,
 		FlagDownloadAddr,
 		FlagDownloadHost,
+		FlagAccountID,
+		FlagLicenseKey,
 		FlagCacheDuration,
 		FlagDebugAddr,
 	}

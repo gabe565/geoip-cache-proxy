@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"github.com/gabe565/geoip-cache-proxy/internal/config"
 	"github.com/gabe565/geoip-cache-proxy/internal/redis"
@@ -32,6 +33,7 @@ func Proxy(conf *config.Config, cache *redis.Client, host string) http.HandlerFu
 		for k := range r.Header {
 			upstreamReq.Header.Set(k, r.Header.Get(k))
 		}
+		setAuth(conf, upstreamReq)
 
 		var cacheStatus CacheStatus
 		var upstreamResp *http.Response
@@ -89,5 +91,17 @@ func buildURL(host string, r *http.Request) url.URL {
 		Path:     r.URL.Path,
 		RawQuery: r.URL.RawQuery,
 		Fragment: r.URL.Fragment,
+	}
+}
+
+func setAuth(conf *config.Config, r *http.Request) {
+	if conf.AccountID != 0 && conf.LicenseKey != "" {
+		q := r.URL.Query()
+		if q.Has("license_key") {
+			q.Set("license_key", conf.LicenseKey)
+			r.URL.RawQuery = q.Encode()
+		} else {
+			r.SetBasicAuth(strconv.Itoa(conf.AccountID), conf.LicenseKey)
+		}
 	}
 }

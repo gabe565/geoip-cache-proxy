@@ -19,6 +19,9 @@ const (
 	FlagDownloadAddr = "download-addr"
 	FlagDownloadHost = "download-host"
 
+	FlagAccountID  = "account-id"
+	FlagLicenseKey = "license-key"
+
 	FlagCacheDuration = "cache-duration"
 
 	FlagDebugAddr = "debug-addr"
@@ -38,6 +41,9 @@ func (c *Config) RegisterFlags(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&c.UpdatesHost, FlagUpdatesHost, c.UpdatesHost, "MaxMind updates host")
 	cmd.Flags().StringVar(&c.DownloadAddr, FlagDownloadAddr, c.DownloadAddr, "Listen address")
 	cmd.Flags().StringVar(&c.DownloadHost, FlagDownloadHost, c.DownloadHost, "MaxMind download host")
+
+	cmd.Flags().IntVar(&c.AccountID, FlagAccountID, c.AccountID, "MaxMind account ID")
+	cmd.Flags().StringVar(&c.LicenseKey, FlagLicenseKey, c.LicenseKey, "MaxMind license key")
 
 	cmd.Flags().DurationVar(&c.CacheDuration, FlagCacheDuration, c.CacheDuration, "Length of time to cache MaxMind response")
 

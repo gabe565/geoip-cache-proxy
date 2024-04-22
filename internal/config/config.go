@@ -19,6 +19,9 @@ type Config struct {
 	DownloadAddr string
 	DownloadHost string
 
+	AccountID  int
+	LicenseKey string
+
 	CacheDuration time.Duration
 
 	DebugAddr string
