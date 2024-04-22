@@ -49,6 +49,9 @@ func (c *Client) Close() error {
 }
 
 func FormatCacheKey(u url.URL, req *http.Request) string {
+	q := u.Query()
+	q.Del("db_md5")
+	u.RawQuery = q.Encode()
 	key := req.Method + " " + u.String() + " " + req.Header.Get("Authorization")
 	sum := sha256.Sum256([]byte(key))
 	return hex.EncodeToString(sum[:])
