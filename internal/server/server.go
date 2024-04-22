@@ -40,7 +40,7 @@ func ListenAndServe(ctx context.Context, conf *config.Config, cache *redis.Clien
 	}
 
 	<-ctx.Done()
-	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), conf.HTTPTimeout)
 	defer shutdownCancel()
 
 	group.Go(func() error {
