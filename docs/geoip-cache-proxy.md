@@ -9,7 +9,7 @@ geoip-cache-proxy [flags]
 ### Options
 
 ```
-      --cache-duration duration   Length of time to cache MaxMind response (default 24h0m0s)
+      --cache-duration duration   Length of time to cache MaxMind response (default 12h0m0s)
       --debug-addr string         Debug pprof listen address (default ":6060")
       --download-addr string      Listen address (default ":8081")
       --download-host string      MaxMind download host (default "download.maxmind.com")

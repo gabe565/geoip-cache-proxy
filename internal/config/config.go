@@ -38,7 +38,7 @@ func NewDefault() *Config {
 		DownloadAddr: ":8081",
 		DownloadHost: "download.maxmind.com",
 
-		CacheDuration: 24 * time.Hour,
+		CacheDuration: 12 * time.Hour,
 
 		DebugAddr: ":6060",
 	}
