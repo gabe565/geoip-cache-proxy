@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	_ "net/http/pprof" //nolint:gosec
 	"time"
@@ -55,7 +56,11 @@ func ListenAndServe(ctx context.Context, conf *config.Config, cache *redis.Clien
 		return debug.Shutdown(shutdownCtx)
 	})
 
-	return group.Wait()
+	err := group.Wait()
+	if errors.Is(err, http.ErrServerClosed) {
+		return nil
+	}
+	return err
 }
 
 func NewDownload(conf *config.Config, cache *redis.Client) *http.Server {
