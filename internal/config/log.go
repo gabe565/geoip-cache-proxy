@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 
 	"github.com/fatih/color"
 	"github.com/mattn/go-isatty"
@@ -54,6 +55,7 @@ func logFormat(out io.Writer, format string) io.Writer {
 			FormatMessage: func(i interface{}) string {
 				return sprintf("%-45s", i)
 			},
+			TimeFormat: time.DateTime,
 		}
 	}
 }
