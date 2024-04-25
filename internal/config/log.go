@@ -1,12 +1,10 @@
 package config
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"time"
 
-	"github.com/fatih/color"
 	"github.com/mattn/go-isatty"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -31,30 +29,22 @@ func logFormat(out io.Writer, format string) io.Writer {
 	case "json", "j":
 		return out
 	default:
-		sprintf := fmt.Sprintf
 		var useColor bool
 		switch format {
 		case "auto", "a":
 			if w, ok := out.(*os.File); ok {
 				useColor = isatty.IsTerminal(w.Fd())
-				if useColor {
-					sprintf = color.New(color.Bold).Sprintf
-				}
 			}
 		case "color", "c":
 			useColor = true
-			sprintf = color.New(color.Bold).Sprintf
 		case "plain", "p":
 		default:
 			log.Warn().Str("value", format).Msg("invalid log formatter. defaulting to auto.")
 		}
 
 		return zerolog.ConsoleWriter{
-			Out:     out,
-			NoColor: !useColor,
-			FormatMessage: func(i interface{}) string {
-				return sprintf("%-45s", i)
-			},
+			Out:        out,
+			NoColor:    !useColor,
 			TimeFormat: time.DateTime,
 		}
 	}

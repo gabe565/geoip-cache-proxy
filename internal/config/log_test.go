@@ -57,8 +57,6 @@ func Test_logFormat(t *testing.T) {
 			require.IsType(t, tt.want, got)
 			if want, ok := tt.want.(zerolog.ConsoleWriter); ok {
 				got := got.(zerolog.ConsoleWriter)
-				assert.NotNil(t, got.FormatMessage)
-				want.FormatMessage = got.FormatMessage
 				assert.Equal(t, want.Out, got.Out)
 				assert.Equal(t, want.NoColor, got.NoColor)
 			}
