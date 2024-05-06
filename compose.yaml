@@ -3,9 +3,9 @@ services:
     image: ghcr.io/gabe565/geoip-cache-proxy
     build: .
     environment:
-      GEOIP_REDIS_HOST: redis
+      GEOIP_REDIS_HOST: valkey
     depends_on:
-      redis:
+      valkey:
         condition: service_started
     read_only: true
     ports:
@@ -22,7 +22,7 @@ services:
         - action: rebuild
           path: ./internal
 
-  redis:
-    image: redis:alpine
+  valkey:
+    image: valkey/valkey:7.2-alpine
     ports:
       - 127.0.0.1:6379:6379
