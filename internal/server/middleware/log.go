@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"context"
 	"net/http"
 	"strconv"
 	"time"
@@ -11,10 +10,6 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/urfave/negroni/v3"
 )
-
-type ctxKey uint8
-
-const logCtxKey ctxKey = iota
 
 func Log(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +25,7 @@ func Log(next http.Handler) http.Handler {
 			Logger()
 
 		resp := negroni.NewResponseWriter(w)
-		ctx := LogContext(r.Context(), logger)
+		ctx := logger.WithContext(r.Context())
 		next.ServeHTTP(resp, r.WithContext(ctx))
 
 		level := zerolog.DebugLevel
@@ -45,12 +40,4 @@ func Log(next http.Handler) http.Handler {
 			Str("cacheStatus", resp.Header().Get(consts.CacheStatusHeader)).
 			Msg("served request")
 	})
-}
-
-func LogContext(ctx context.Context, logger zerolog.Logger) context.Context {
-	return context.WithValue(ctx, logCtxKey, logger)
-}
-
-func LogFromContext(ctx context.Context) zerolog.Logger {
-	return ctx.Value(logCtxKey).(zerolog.Logger)
 }
