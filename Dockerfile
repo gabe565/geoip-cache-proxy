@@ -1,6 +1,6 @@
 #syntax=docker/dockerfile:1.7
 
-FROM --platform=$BUILDPLATFORM golang:1.22.2-alpine as build
+FROM --platform=$BUILDPLATFORM golang:1.22.3-alpine as build
 WORKDIR /app
 
 COPY go.mod go.sum ./
