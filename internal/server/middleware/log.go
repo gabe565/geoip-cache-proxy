@@ -20,7 +20,6 @@ func Log(next http.Handler) http.Handler {
 			Str("requestUrl", r.URL.String()).
 			Str("remoteAddr", r.RemoteAddr).
 			Str("userAgent", r.UserAgent()).
-			Str("latency", time.Since(start).String()).
 			Str("protocol", r.Proto).
 			Logger()
 
@@ -34,6 +33,7 @@ func Log(next http.Handler) http.Handler {
 		}
 
 		logger.WithLevel(level).
+			Str("latency", time.Since(start).String()).
 			Str("status", strconv.Itoa(resp.Status())).
 			Str("responseSize", strconv.Itoa(resp.Size())).
 			Str("upstreamUrl", resp.Header().Get(consts.UpstreamURLHeader)).
