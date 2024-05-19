@@ -1,6 +1,6 @@
 module github.com/gabe565/geoip-cache-proxy
 
-go 1.22.2
+go 1.22.3
 
 require (
 	github.com/mattn/go-isatty v0.0.20
