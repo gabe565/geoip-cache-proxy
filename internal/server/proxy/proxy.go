@@ -44,13 +44,7 @@ func Proxy(conf *config.Config, host string) http.HandlerFunc {
 		if upstreamResp, err = cache.Get(conf.CacheDir, upstreamReq); err == nil {
 			log.Trace().Msg("using cached response")
 			cacheStatus = CacheHit
-		} else if !errors.Is(err, os.ErrNotExist) {
-			log.Trace().Err(err).Msg("failed to get cached response")
-			http.Error(w, err.Error(), http.StatusServiceUnavailable)
-			return
-		}
-
-		if cacheStatus == CacheMiss {
+		} else if errors.Is(err, os.ErrNotExist) {
 			log.Trace().Msg("forwarding request to upstream")
 			upstreamResp, err = http.DefaultClient.Do(upstreamReq)
 			if err != nil {
@@ -78,6 +72,10 @@ func Proxy(conf *config.Config, host string) http.HandlerFunc {
 			} else {
 				cacheStatus = CacheBypass
 			}
+		} else {
+			log.Trace().Err(err).Msg("failed to get cached response")
+			http.Error(w, err.Error(), http.StatusServiceUnavailable)
+			return
 		}
 
 		for k := range upstreamResp.Header {
