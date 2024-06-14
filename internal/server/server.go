@@ -10,8 +10,10 @@ import (
 	"github.com/gabe565/geoip-cache-proxy/internal/config"
 	"github.com/gabe565/geoip-cache-proxy/internal/redis"
 	"github.com/gabe565/geoip-cache-proxy/internal/server/api"
-	"github.com/gabe565/geoip-cache-proxy/internal/server/middleware"
+	geoipmiddleware "github.com/gabe565/geoip-cache-proxy/internal/server/middleware"
 	"github.com/gabe565/geoip-cache-proxy/internal/server/proxy"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/errgroup"
 )
@@ -64,18 +66,24 @@ func ListenAndServe(ctx context.Context, conf *config.Config, cache *redis.Clien
 }
 
 func NewDownload(conf *config.Config, cache *redis.Client) *http.Server {
+	r := newMux(conf, cache)
+	r.Handle("/*", proxy.Proxy(conf, cache, conf.DownloadHost))
+
 	return &http.Server{
 		Addr:           conf.DownloadAddr,
-		Handler:        middleware.Log(middleware.Timeout(conf.HTTPTimeout, proxy.Proxy(conf, cache, conf.DownloadHost))),
+		Handler:        r,
 		ReadTimeout:    10 * time.Second,
 		MaxHeaderBytes: 1024 * 1024, // 1MiB
 	}
 }
 
 func NewUpdates(conf *config.Config, cache *redis.Client) *http.Server {
+	r := newMux(conf, cache)
+	r.Handle("/*", proxy.Proxy(conf, cache, conf.UpdatesHost))
+
 	return &http.Server{
 		Addr:           conf.UpdatesAddr,
-		Handler:        middleware.Log(middleware.Timeout(conf.HTTPTimeout, proxy.Proxy(conf, cache, conf.UpdatesHost))),
+		Handler:        r,
 		ReadTimeout:    10 * time.Second,
 		MaxHeaderBytes: 1024 * 1024, // 1MiB
 	}
@@ -84,7 +92,7 @@ func NewUpdates(conf *config.Config, cache *redis.Client) *http.Server {
 func NewDebug(conf *config.Config, cache *redis.Client) *http.Server {
 	if conf.DebugAddr != "" {
 		http.Handle("/livez", api.Live())
-		http.Handle("/readyz", middleware.Timeout(conf.HTTPTimeout, api.Ready(cache)))
+		http.Handle("/readyz", http.TimeoutHandler(api.Ready(cache), conf.HTTPTimeout, "timeout exceeded"))
 		return &http.Server{
 			Addr:           conf.DebugAddr,
 			ReadTimeout:    10 * time.Second,
@@ -92,4 +100,13 @@ func NewDebug(conf *config.Config, cache *redis.Client) *http.Server {
 		}
 	}
 	return nil
+}
+
+func newMux(conf *config.Config, cache *redis.Client) *chi.Mux {
+	r := chi.NewMux()
+	r.Use(middleware.RealIP)
+	r.Use(geoipmiddleware.Log)
+	r.Use(middleware.Recoverer)
+	r.Use(middleware.Timeout(conf.HTTPTimeout))
+	return r
 }

@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/gabe565/geoip-cache-proxy/internal/server/consts"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"github.com/urfave/negroni/v3"
 )
 
 func Log(next http.Handler) http.Handler {
@@ -23,7 +23,7 @@ func Log(next http.Handler) http.Handler {
 			Str("protocol", r.Proto).
 			Logger()
 
-		resp := negroni.NewResponseWriter(w)
+		resp := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
 		ctx := logger.WithContext(r.Context())
 		next.ServeHTTP(resp, r.WithContext(ctx))
 
@@ -35,7 +35,7 @@ func Log(next http.Handler) http.Handler {
 		logger.WithLevel(level).
 			Str("latency", time.Since(start).String()).
 			Str("status", strconv.Itoa(resp.Status())).
-			Str("responseSize", strconv.Itoa(resp.Size())).
+			Str("responseSize", strconv.Itoa(resp.BytesWritten())).
 			Str("upstreamUrl", resp.Header().Get(consts.UpstreamURLHeader)).
 			Str("cacheStatus", resp.Header().Get(consts.CacheStatusHeader)).
 			Msg("served request")

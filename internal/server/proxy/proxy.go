@@ -3,7 +3,6 @@ package proxy
 import (
 	"errors"
 	"io"
-	"net"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -25,11 +24,7 @@ func Proxy(conf *config.Config, cache *redis.Client, host string) http.HandlerFu
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		if host, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
-			upstreamReq.Header.Set("X-Forwarded-For", host)
-		} else {
-			log.Warn().Err(err).Msg("failed to split remote address")
-		}
+		upstreamReq.Header.Set("X-Forwarded-For", r.RemoteAddr)
 		for k := range r.Header {
 			upstreamReq.Header.Set(k, r.Header.Get(k))
 		}
