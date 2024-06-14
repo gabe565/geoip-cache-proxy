@@ -67,7 +67,7 @@ func ListenAndServe(ctx context.Context, conf *config.Config, cache *redis.Clien
 
 func NewDownload(conf *config.Config, cache *redis.Client) *http.Server {
 	r := newMux(conf, cache)
-	r.Handle("/*", proxy.Proxy(conf, cache, conf.DownloadHost))
+	r.Get("/*", proxy.Proxy(conf, cache, conf.DownloadHost))
 
 	return &http.Server{
 		Addr:           conf.DownloadAddr,
@@ -79,7 +79,7 @@ func NewDownload(conf *config.Config, cache *redis.Client) *http.Server {
 
 func NewUpdates(conf *config.Config, cache *redis.Client) *http.Server {
 	r := newMux(conf, cache)
-	r.Handle("/*", proxy.Proxy(conf, cache, conf.UpdatesHost))
+	r.Get("/*", proxy.Proxy(conf, cache, conf.UpdatesHost))
 
 	return &http.Server{
 		Addr:           conf.UpdatesAddr,
