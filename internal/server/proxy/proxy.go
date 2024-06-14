@@ -17,7 +17,7 @@ import (
 
 func Proxy(conf *config.Config, host string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		u := buildURL(host, r)
+		u := upstreamURL(host, r)
 		log := log.Ctx(r.Context()).With().Str("upstreamUrl", u.String()).Logger()
 
 		upstreamReq, err := http.NewRequestWithContext(r.Context(), r.Method, u.String(), r.Body)
@@ -90,14 +90,11 @@ func Proxy(conf *config.Config, host string) http.HandlerFunc {
 	}
 }
 
-func buildURL(host string, r *http.Request) url.URL {
-	return url.URL{
-		Scheme:   "https",
-		Host:     host,
-		Path:     r.URL.Path,
-		RawQuery: r.URL.RawQuery,
-		Fragment: r.URL.Fragment,
-	}
+func upstreamURL(host string, r *http.Request) url.URL {
+	u := *r.URL
+	u.Scheme = "https"
+	u.Host = host
+	return u
 }
 
 func setAuth(conf *config.Config, r *http.Request) {
