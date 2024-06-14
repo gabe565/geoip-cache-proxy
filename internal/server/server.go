@@ -58,11 +58,10 @@ func ListenAndServe(ctx context.Context, conf *config.Config, cache *redis.Clien
 		return debug.Shutdown(shutdownCtx)
 	})
 
-	err := group.Wait()
-	if errors.Is(err, http.ErrServerClosed) {
-		return nil
+	if err := group.Wait(); !errors.Is(err, http.ErrServerClosed) {
+		return err
 	}
-	return err
+	return nil
 }
 
 func NewDownload(conf *config.Config, cache *redis.Client) *http.Server {
