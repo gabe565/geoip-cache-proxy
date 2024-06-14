@@ -19,8 +19,7 @@ func cacheKey(req *http.Request) string {
 	q := u.Query()
 	q.Del("db_md5")
 	u.RawQuery = q.Encode()
-	key := req.Method + " " + u.String() + " " + req.Header.Get("Authorization")
-	sum := sha256.Sum256([]byte(key))
+	sum := sha256.Sum256([]byte(u.String()))
 	encoded := hex.EncodeToString(sum[:])
 	return encoded
 }
