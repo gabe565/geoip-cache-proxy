@@ -8,11 +8,6 @@ type Config struct {
 	LogLevel  string
 	LogFormat string
 
-	RedisHost     string
-	RedisPort     uint16
-	RedisPassword string
-	RedisDB       int
-
 	HTTPTimeout  time.Duration
 	UpdatesAddr  string
 	UpdatesHost  string
@@ -22,7 +17,9 @@ type Config struct {
 	AccountID  int
 	LicenseKey string
 
+	CacheDir      string
 	CacheDuration time.Duration
+	CleanupEvery  time.Duration
 
 	DebugAddr string
 }
@@ -32,16 +29,15 @@ func NewDefault() *Config {
 		LogLevel:  "info",
 		LogFormat: "auto",
 
-		RedisHost: "localhost",
-		RedisPort: 6379,
-
 		HTTPTimeout:  30 * time.Second,
 		UpdatesAddr:  ":8080",
 		UpdatesHost:  "updates.maxmind.com",
 		DownloadAddr: ":8081",
 		DownloadHost: "download.maxmind.com",
 
+		CacheDir:      "data",
 		CacheDuration: 12 * time.Hour,
+		CleanupEvery:  15 * time.Minute,
 
 		DebugAddr: ":6060",
 	}

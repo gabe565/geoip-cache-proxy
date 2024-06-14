@@ -7,8 +7,8 @@ import (
 	_ "net/http/pprof" //nolint:gosec
 	"time"
 
+	"github.com/gabe565/geoip-cache-proxy/internal/cache"
 	"github.com/gabe565/geoip-cache-proxy/internal/config"
-	"github.com/gabe565/geoip-cache-proxy/internal/redis"
 	"github.com/gabe565/geoip-cache-proxy/internal/server/api"
 	geoipmiddleware "github.com/gabe565/geoip-cache-proxy/internal/server/middleware"
 	"github.com/gabe565/geoip-cache-proxy/internal/server/proxy"
@@ -18,22 +18,28 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func ListenAndServe(ctx context.Context, conf *config.Config, cache *redis.Client) error {
+func ListenAndServe(ctx context.Context, conf *config.Config) error {
+	if err := cache.EnsureCache(conf); err != nil {
+		return err
+	}
+
+	cache.BeginCleanup(ctx, conf)
+
 	group, ctx := errgroup.WithContext(ctx)
 
-	download := NewDownload(conf, cache)
+	download := NewDownload(conf)
 	group.Go(func() error {
 		log.Info().Str("address", conf.DownloadAddr).Msg("starting download server")
 		return download.ListenAndServe()
 	})
 
-	updates := NewUpdates(conf, cache)
+	updates := NewUpdates(conf)
 	group.Go(func() error {
 		log.Info().Str("address", conf.UpdatesAddr).Msg("starting updates server")
 		return updates.ListenAndServe()
 	})
 
-	debug := NewDebug(conf, cache)
+	debug := NewDebug(conf)
 	if debug != nil {
 		group.Go(func() error {
 			log.Info().Str("address", conf.DebugAddr).Msg("starting debug pprof server")
@@ -64,9 +70,9 @@ func ListenAndServe(ctx context.Context, conf *config.Config, cache *redis.Clien
 	return nil
 }
 
-func NewDownload(conf *config.Config, cache *redis.Client) *http.Server {
-	r := newMux(conf, cache)
-	r.Get("/*", proxy.Proxy(conf, cache, conf.DownloadHost))
+func NewDownload(conf *config.Config) *http.Server {
+	r := newMux(conf)
+	r.Get("/*", proxy.Proxy(conf, conf.DownloadHost))
 
 	return &http.Server{
 		Addr:           conf.DownloadAddr,
@@ -76,9 +82,9 @@ func NewDownload(conf *config.Config, cache *redis.Client) *http.Server {
 	}
 }
 
-func NewUpdates(conf *config.Config, cache *redis.Client) *http.Server {
-	r := newMux(conf, cache)
-	r.Get("/*", proxy.Proxy(conf, cache, conf.UpdatesHost))
+func NewUpdates(conf *config.Config) *http.Server {
+	r := newMux(conf)
+	r.Get("/*", proxy.Proxy(conf, conf.UpdatesHost))
 
 	return &http.Server{
 		Addr:           conf.UpdatesAddr,
@@ -88,10 +94,10 @@ func NewUpdates(conf *config.Config, cache *redis.Client) *http.Server {
 	}
 }
 
-func NewDebug(conf *config.Config, cache *redis.Client) *http.Server {
+func NewDebug(conf *config.Config) *http.Server {
 	if conf.DebugAddr != "" {
 		http.Handle("/livez", api.Live())
-		http.Handle("/readyz", http.TimeoutHandler(api.Ready(cache), conf.HTTPTimeout, "timeout exceeded"))
+		http.Handle("/readyz", http.TimeoutHandler(api.Ready(), conf.HTTPTimeout, "timeout exceeded"))
 		return &http.Server{
 			Addr:           conf.DebugAddr,
 			ReadTimeout:    10 * time.Second,
@@ -101,7 +107,7 @@ func NewDebug(conf *config.Config, cache *redis.Client) *http.Server {
 	return nil
 }
 
-func newMux(conf *config.Config, cache *redis.Client) *chi.Mux {
+func newMux(conf *config.Config) *chi.Mux {
 	r := chi.NewMux()
 	r.Use(middleware.RealIP)
 	r.Use(geoipmiddleware.Log)
