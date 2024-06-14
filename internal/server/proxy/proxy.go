@@ -58,7 +58,7 @@ func Proxy(conf *config.Config, cache *redis.Client, host string) http.HandlerFu
 				_ = Body.Close()
 			}(upstreamResp.Body)
 
-			if upstreamResp.StatusCode < 400 {
+			if upstreamResp.StatusCode < 300 {
 				if err = cache.SetCache(r.Context(), u, upstreamReq, upstreamResp, conf.CacheDuration); err != nil {
 					log.Err(err).Msg("failed to set cache response")
 					http.Error(w, err.Error(), http.StatusServiceUnavailable)
