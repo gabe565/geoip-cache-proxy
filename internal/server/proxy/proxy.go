@@ -32,13 +32,16 @@ func Proxy(conf *config.Config, cache *redis.Client, host string) http.HandlerFu
 
 		var cacheStatus CacheStatus
 		var upstreamResp *http.Response
+		defer func() {
+			if upstreamResp != nil {
+				_, _ = io.Copy(io.Discard, upstreamResp.Body)
+				_ = upstreamResp.Body.Close()
+			}
+		}()
+
 		if upstreamResp, err = cache.GetCache(r.Context(), u, upstreamReq); err == nil {
 			log.Trace().Msg("using cached response")
 			cacheStatus = CacheHit
-			defer func(Body io.ReadCloser) {
-				_, _ = io.Copy(io.Discard, upstreamResp.Body)
-				_ = Body.Close()
-			}(upstreamResp.Body)
 		} else if !errors.Is(err, redis.ErrNotExist) {
 			log.Trace().Err(err).Msg("failed to get cached response")
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)
@@ -53,10 +56,6 @@ func Proxy(conf *config.Config, cache *redis.Client, host string) http.HandlerFu
 				http.Error(w, err.Error(), http.StatusServiceUnavailable)
 				return
 			}
-			defer func(Body io.ReadCloser) {
-				_, _ = io.Copy(io.Discard, upstreamResp.Body)
-				_ = Body.Close()
-			}(upstreamResp.Body)
 
 			if upstreamResp.StatusCode < 300 {
 				if err = cache.SetCache(r.Context(), u, upstreamReq, upstreamResp, conf.CacheDuration); err != nil {
