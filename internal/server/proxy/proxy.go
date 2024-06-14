@@ -56,8 +56,8 @@ func Proxy(conf *config.Config, host string) http.HandlerFunc {
 			if upstreamResp.StatusCode < 300 {
 				cacheWriter, err := cache.NewWriter(conf.CacheDir, upstreamReq, upstreamResp)
 				if err != nil {
-					log.Err(err).Msg("failed to set cache response")
-					http.Error(w, err.Error(), http.StatusServiceUnavailable)
+					log.Err(err).Msg("failed to cache response")
+					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
 				defer func() {
