@@ -54,21 +54,19 @@ func Proxy(conf *config.Config, host string) http.HandlerFunc {
 			}
 
 			if upstreamResp.StatusCode < 300 {
-				cacheWriter, err := cache.NewWriter(conf.CacheDir, upstreamReq, upstreamResp)
-				if err != nil {
-					log.Err(err).Msg("failed to cache response")
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-				defer func() {
-					if err := cacheWriter.Close(); err != nil {
-						log.Err(err).Msg("failed to close cache")
-					}
-				}()
+				if cacheWriter, err := cache.NewWriter(conf.CacheDir, upstreamReq, upstreamResp); err == nil {
+					defer func() {
+						if err := cacheWriter.Close(); err != nil {
+							log.Err(err).Msg("failed to close cache")
+						}
+					}()
 
-				wrapped := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
-				wrapped.Tee(cacheWriter)
-				w = wrapped
+					wrapped := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
+					wrapped.Tee(cacheWriter)
+					w = wrapped
+				} else {
+					log.Err(err).Msg("failed to cache response")
+				}
 			} else {
 				cacheStatus = CacheBypass
 			}
