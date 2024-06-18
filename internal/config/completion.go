@@ -19,15 +19,11 @@ func RegisterCompletions(cmd *cobra.Command) {
 		panic(err)
 	}
 
-	if err := cmd.RegisterFlagCompletionFunc(FlagCacheDir,
-		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
-			return nil, cobra.ShellCompDirectiveFilterDirs
-		},
-	); err != nil {
-		panic(err)
-	}
-
 	npCompFlags := []string{
+		FlagRedisHost,
+		FlagRedisPort,
+		FlagRedisPassword,
+		FlagRedisDB,
 		FlagUpdatesAddr,
 		FlagUpdatesHost,
 		FlagDownloadAddr,
@@ -35,7 +31,6 @@ func RegisterCompletions(cmd *cobra.Command) {
 		FlagAccountID,
 		FlagLicenseKey,
 		FlagCacheDuration,
-		FlagCleanupEvery,
 		FlagDebugAddr,
 	}
 	for _, name := range npCompFlags {

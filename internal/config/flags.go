@@ -8,6 +8,11 @@ const (
 	FlagLogLevel  = "log-level"
 	FlagLogFormat = "log-format"
 
+	FlagRedisHost     = "redis-host"
+	FlagRedisPort     = "redis-port"
+	FlagRedisPassword = "redis-password"
+	FlagRedisDB       = "redis-db"
+
 	FlagHTTPTimeout  = "http-timeout"
 	FlagUpdatesAddr  = "updates-addr"
 	FlagUpdatesHost  = "updates-host"
@@ -17,9 +22,7 @@ const (
 	FlagAccountID  = "account-id"
 	FlagLicenseKey = "license-key"
 
-	FlagCacheDir      = "cache-dir"
 	FlagCacheDuration = "cache-duration"
-	FlagCleanupEvery  = "cleanup-every"
 
 	FlagDebugAddr = "debug-addr"
 )
@@ -27,6 +30,11 @@ const (
 func (c *Config) RegisterFlags(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&c.LogLevel, FlagLogLevel, "l", c.LogLevel, "Log level (trace, debug, info, warn, error, fatal, panic)")
 	cmd.Flags().StringVar(&c.LogFormat, FlagLogFormat, c.LogFormat, "Log format (auto, color, plain, json)")
+
+	cmd.Flags().StringVar(&c.RedisHost, FlagRedisHost, c.RedisHost, "Redis host")
+	cmd.Flags().Uint16Var(&c.RedisPort, FlagRedisPort, c.RedisPort, "Redis port")
+	cmd.Flags().StringVar(&c.RedisPassword, FlagRedisPassword, c.RedisPassword, "Redis password")
+	cmd.Flags().IntVar(&c.RedisDB, FlagRedisDB, c.RedisDB, "Redis database")
 
 	cmd.Flags().DurationVar(&c.HTTPTimeout, FlagHTTPTimeout, c.HTTPTimeout, "HTTP request timeout")
 	cmd.Flags().StringVar(&c.UpdatesAddr, FlagUpdatesAddr, c.UpdatesAddr, "Listen address")
@@ -37,9 +45,7 @@ func (c *Config) RegisterFlags(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&c.AccountID, FlagAccountID, c.AccountID, "MaxMind account ID")
 	cmd.Flags().StringVar(&c.LicenseKey, FlagLicenseKey, c.LicenseKey, "MaxMind license key")
 
-	cmd.Flags().StringVar(&c.CacheDir, FlagCacheDir, c.CacheDir, "Cache directory path")
 	cmd.Flags().DurationVar(&c.CacheDuration, FlagCacheDuration, c.CacheDuration, "Length of time to cache MaxMind response")
-	cmd.Flags().DurationVar(&c.CleanupEvery, FlagCleanupEvery, c.CleanupEvery, "Interval to clean up expired cache entries")
 
 	cmd.Flags().StringVar(&c.DebugAddr, FlagDebugAddr, c.DebugAddr, "Debug pprof listen address")
 }
