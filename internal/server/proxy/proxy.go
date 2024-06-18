@@ -5,17 +5,16 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strconv"
 
-	"github.com/gabe565/geoip-cache-proxy/internal/cache"
 	"github.com/gabe565/geoip-cache-proxy/internal/config"
+	"github.com/gabe565/geoip-cache-proxy/internal/redis"
 	"github.com/gabe565/geoip-cache-proxy/internal/server/consts"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog/log"
 )
 
-func Proxy(conf *config.Config, host string) http.HandlerFunc {
+func Proxy(conf *config.Config, cache *redis.Client, host string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		u := upstreamURL(host, r)
 		log := log.Ctx(r.Context()).With().Str("upstreamUrl", u.String()).Logger()
@@ -41,10 +40,10 @@ func Proxy(conf *config.Config, host string) http.HandlerFunc {
 			}
 		}()
 
-		if upstreamResp, err = cache.Get(conf.CacheDir, upstreamReq); err == nil {
+		if upstreamResp, err = cache.Get(r.Context(), upstreamReq); err == nil {
 			log.Trace().Msg("using cached response")
 			cacheStatus = CacheHit
-		} else if errors.Is(err, os.ErrNotExist) {
+		} else if errors.Is(err, redis.ErrNotExist) {
 			log.Trace().Msg("forwarding request to upstream")
 			upstreamResp, err = http.DefaultClient.Do(upstreamReq)
 			if err != nil {
@@ -54,7 +53,7 @@ func Proxy(conf *config.Config, host string) http.HandlerFunc {
 			}
 
 			if upstreamResp.StatusCode < 300 {
-				if cacheWriter, err := cache.NewWriter(conf.CacheDir, upstreamReq, upstreamResp); err == nil {
+				if cacheWriter, err := cache.NewWriter(r.Context(), upstreamReq, upstreamResp, conf.CacheDuration); err == nil {
 					defer func() {
 						if err := cacheWriter.Close(); err != nil {
 							log.Err(err).Msg("failed to close cache")

@@ -20,13 +20,10 @@ RUN --mount=type=cache,target=/root/.cache <<EOT
     *) echo "Unsupported target: $TARGETPLATFORM" && exit 1 ;;
   esac
   go build -ldflags='-w -s' -trimpath
-
-  mkdir /data
 EOT
 
 
 FROM gcr.io/distroless/static:nonroot
 WORKDIR /
 COPY --from=build /app/geoip-cache-proxy /
-COPY --from=build --chown=65532:65532 /data /data
 ENTRYPOINT ["/geoip-cache-proxy"]
