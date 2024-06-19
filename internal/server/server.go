@@ -10,8 +10,9 @@ import (
 	"github.com/gabe565/geoip-cache-proxy/internal/config"
 	"github.com/gabe565/geoip-cache-proxy/internal/redis"
 	"github.com/gabe565/geoip-cache-proxy/internal/server/api"
+	"github.com/gabe565/geoip-cache-proxy/internal/server/handlers"
+	"github.com/gabe565/geoip-cache-proxy/internal/server/handlers/proxy"
 	geoipmiddleware "github.com/gabe565/geoip-cache-proxy/internal/server/middleware"
-	"github.com/gabe565/geoip-cache-proxy/internal/server/proxy"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog/log"
@@ -107,5 +108,6 @@ func newMux(conf *config.Config) *chi.Mux {
 	r.Use(geoipmiddleware.Log)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(conf.HTTPTimeout))
+	r.Get("/robots.txt", handlers.RobotsTxt)
 	return r
 }
