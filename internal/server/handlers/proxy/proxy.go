@@ -40,7 +40,7 @@ func Proxy(conf *config.Config, cache *redis.Client, host string) http.HandlerFu
 			}
 		}()
 
-		if upstreamResp, err = cache.Get(r.Context(), upstreamReq); err == nil {
+		if upstreamResp, err = cache.Get(r.Context(), upstreamReq, conf.HTTPTimeout); err == nil {
 			log.Trace().Msg("using cached response")
 			cacheStatus = CacheHit
 		} else if errors.Is(err, redis.ErrNotExist) {

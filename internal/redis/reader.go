@@ -3,19 +3,17 @@ package redis
 import (
 	"bytes"
 	"context"
-	"errors"
 	"io"
 	"strconv"
-
-	"github.com/redis/rueidis"
 )
 
 type CacheReader struct {
-	ctx   context.Context
-	cache *Client
-	key   string
-	buf   bytes.Buffer
-	chunk int
+	ctx    context.Context
+	cache  *Client
+	key    string
+	buf    bytes.Buffer
+	chunks int
+	chunk  int
 }
 
 func (c *CacheReader) Read(p []byte) (int, error) {
@@ -23,15 +21,13 @@ func (c *CacheReader) Read(p []byte) (int, error) {
 		return c.buf.Read(p)
 	}
 
+	if c.chunk >= c.chunks {
+		return 0, io.EOF
+	}
+
 	key := c.key + "_body_" + strconv.Itoa(c.chunk)
 	b, err := c.cache.Do(c.ctx, c.cache.B().Get().Key(key).Build()).AsBytes()
 	if err != nil {
-		var redisErr *rueidis.RedisError
-		if errors.As(err, &redisErr) {
-			if redisErr.IsNil() {
-				return 0, io.EOF
-			}
-		}
 		return 0, err
 	}
 	c.buf.Write(b)

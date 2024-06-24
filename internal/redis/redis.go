@@ -62,7 +62,7 @@ func FormatCacheKey(req *http.Request) string {
 
 var ErrNotExist = errors.New("key not found")
 
-func (c *Client) Get(ctx context.Context, req *http.Request) (*http.Response, error) {
+func (c *Client) Get(ctx context.Context, req *http.Request, httpTimeout time.Duration) (*http.Response, error) {
 	key := FormatCacheKey(req)
 
 	locks.Lock(key)
@@ -73,13 +73,28 @@ func (c *Client) Get(ctx context.Context, req *http.Request) (*http.Response, er
 		}
 	}()
 
+	ttl, err := c.Do(ctx, c.B().Ttl().Key(key+"_headers").Build()).AsInt64()
+	if err != nil {
+		return nil, err
+	}
+	if ttl == -2 || ttl < int64(httpTimeout/time.Second) {
+		return nil, ErrNotExist
+	}
+
 	r, err := c.Do(ctx, c.B().Get().Key(key+"_headers").Build()).AsReader()
 	if err != nil {
 		var redisErr *rueidis.RedisError
-		if errors.As(err, &redisErr) {
-			if redisErr.IsNil() {
-				return nil, ErrNotExist
-			}
+		if errors.As(err, &redisErr) && redisErr.IsNil() {
+			return nil, ErrNotExist
+		}
+		return nil, err
+	}
+
+	chunks, err := c.Do(ctx, c.B().Get().Key(key+"_chunks").Build()).AsInt64()
+	if err != nil {
+		var redisErr *rueidis.RedisError
+		if errors.As(err, &redisErr) && redisErr.IsNil() {
+			return nil, ErrNotExist
 		}
 		return nil, err
 	}
@@ -89,9 +104,10 @@ func (c *Client) Get(ctx context.Context, req *http.Request) (*http.Response, er
 	}
 
 	resp.Body = &CacheReader{
-		ctx:   ctx,
-		cache: c,
-		key:   key,
+		ctx:    ctx,
+		cache:  c,
+		key:    key,
+		chunks: int(chunks),
 	}
 	return resp, nil
 }

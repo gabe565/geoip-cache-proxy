@@ -28,6 +28,10 @@ func (c *CacheWriter) Write(p []byte) (int, error) {
 }
 
 func (c *CacheWriter) Close() error {
+	key := c.key + "_chunks"
+	err := c.cache.Do(c.ctx,
+		c.cache.B().Set().Key(key).Value(strconv.Itoa(c.chunk)).Exat(c.expiration).Build(),
+	).Error()
 	locks.Unlock(c.key)
-	return nil
+	return err
 }
