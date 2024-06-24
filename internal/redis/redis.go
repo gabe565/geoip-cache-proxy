@@ -66,10 +66,15 @@ func (c *Client) Get(ctx context.Context, req *http.Request) (*http.Response, er
 	key := FormatCacheKey(req)
 
 	locks.Lock(key)
+	var resp *http.Response
+	defer func() {
+		if resp == nil {
+			locks.Unlock(key)
+		}
+	}()
 
 	r, err := c.Do(ctx, c.B().Get().Key(key+"_headers").Build()).AsReader()
 	if err != nil {
-		locks.Unlock(key)
 		var redisErr *rueidis.RedisError
 		if errors.As(err, &redisErr) {
 			if redisErr.IsNil() {
@@ -79,9 +84,7 @@ func (c *Client) Get(ctx context.Context, req *http.Request) (*http.Response, er
 		return nil, err
 	}
 
-	resp, err := http.ReadResponse(bufio.NewReader(r), req)
-	if err != nil {
-		locks.Unlock(key)
+	if resp, err = http.ReadResponse(bufio.NewReader(r), req); err != nil {
 		return nil, err
 	}
 
@@ -95,11 +98,17 @@ func (c *Client) Get(ctx context.Context, req *http.Request) (*http.Response, er
 
 func (c *Client) NewWriter(ctx context.Context, req *http.Request, resp *http.Response, expiration time.Duration) (io.WriteCloser, error) {
 	key := FormatCacheKey(req)
+
 	locks.Lock(key)
+	var w io.WriteCloser
+	defer func() {
+		if w == nil {
+			locks.Unlock(key)
+		}
+	}()
 
 	b, err := httputil.DumpResponse(resp, false)
 	if err != nil {
-		locks.Unlock(key)
 		return nil, err
 	}
 
@@ -108,11 +117,10 @@ func (c *Client) NewWriter(ctx context.Context, req *http.Request, resp *http.Re
 	if err := c.Do(ctx,
 		c.B().Set().Key(key+"_headers").Value(rueidis.BinaryString(b)).Exat(exp).Build(),
 	).Error(); err != nil {
-		locks.Unlock(key)
 		return nil, err
 	}
 
-	w := &CacheWriter{
+	w = &CacheWriter{
 		ctx:        ctx,
 		cache:      c,
 		key:        key,
