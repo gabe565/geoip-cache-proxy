@@ -9,11 +9,13 @@ import (
 )
 
 type CacheWriter struct {
-	ctx        context.Context
-	cache      *Client
-	key        string
-	expiration time.Time
-	chunk      int
+	ctx           context.Context
+	cache         *Client
+	key           string
+	expiration    time.Time
+	chunk         int
+	contentLength int64
+	written       int64
 }
 
 func (c *CacheWriter) Write(p []byte) (int, error) {
@@ -23,15 +25,22 @@ func (c *CacheWriter) Write(p []byte) (int, error) {
 	).Error()
 	if err == nil {
 		c.chunk++
+		c.written += int64(len(p))
 	}
 	return len(p), err
 }
 
 func (c *CacheWriter) Close() error {
+	defer locks.Unlock(c.key)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	if c.contentLength != -1 && c.written != c.contentLength {
+		return nil
+	}
 	key := c.key + "_chunks"
-	err := c.cache.Do(c.ctx,
+	return c.cache.Do(ctx,
 		c.cache.B().Set().Key(key).Value(strconv.Itoa(c.chunk)).Exat(c.expiration).Build(),
 	).Error()
-	locks.Unlock(c.key)
-	return err
 }

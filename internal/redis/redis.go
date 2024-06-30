@@ -137,10 +137,11 @@ func (c *Client) NewWriter(ctx context.Context, req *http.Request, resp *http.Re
 	}
 
 	w = &CacheWriter{
-		ctx:        ctx,
-		cache:      c,
-		key:        key,
-		expiration: exp,
+		ctx:           ctx,
+		cache:         c,
+		key:           key,
+		expiration:    exp,
+		contentLength: resp.ContentLength,
 	}
 	return w, nil
 }
