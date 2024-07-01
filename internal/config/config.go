@@ -2,6 +2,8 @@ package config
 
 import (
 	"time"
+
+	"github.com/rs/zerolog"
 )
 
 type Config struct {
@@ -29,8 +31,8 @@ type Config struct {
 
 func NewDefault() *Config {
 	return &Config{
-		LogLevel:  "info",
-		LogFormat: "auto",
+		LogLevel:  zerolog.LevelInfoValue,
+		LogFormat: FormatAuto,
 
 		RedisHost: "localhost",
 		RedisPort: 6379,
