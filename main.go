@@ -9,7 +9,7 @@ import (
 
 func main() {
 	if err := cmd.New().Execute(); err != nil {
-		log.Err(err).Msg("exiting due to an error")
+		log.Err(err).Msg("Exiting due to an error")
 		os.Exit(1)
 	}
 }

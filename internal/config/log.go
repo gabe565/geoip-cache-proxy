@@ -17,7 +17,7 @@ func logLevel(level string) zerolog.Level {
 		if level == "warning" {
 			parsedLevel = zerolog.WarnLevel
 		} else {
-			log.Warn().Str("value", level).Msg("invalid log level. defaulting to info.")
+			log.Warn().Str("value", level).Msg("Invalid log level. Defaulting to info.")
 			parsedLevel = zerolog.InfoLevel
 		}
 	}
@@ -39,7 +39,7 @@ func logFormat(out io.Writer, format string) io.Writer {
 			useColor = true
 		case "plain", "p":
 		default:
-			log.Warn().Str("value", format).Msg("invalid log formatter. defaulting to auto.")
+			log.Warn().Str("value", format).Msg("Invalid log formatter. Defaulting to auto.")
 		}
 
 		return zerolog.ConsoleWriter{

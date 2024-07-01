@@ -38,12 +38,12 @@ func Connect(conf *config.Config) (*Client, error) {
 		return nil, err
 	}
 
-	log.Info().Str("addr", addr).Int("db", conf.RedisDB).Msg("connected to redis")
+	log.Info().Str("addr", addr).Int("db", conf.RedisDB).Msg("Connected to redis")
 	return &Client{client}, nil
 }
 
 func (c *Client) Close() {
-	log.Info().Msg("disconnecting from redis")
+	log.Info().Msg("Disconnecting from redis")
 	c.Client.Close()
 }
 

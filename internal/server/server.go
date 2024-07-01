@@ -24,20 +24,20 @@ func ListenAndServe(ctx context.Context, conf *config.Config, cache *redis.Clien
 
 	download := NewDownload(conf, cache)
 	group.Go(func() error {
-		log.Info().Str("address", conf.DownloadAddr).Msg("starting download server")
+		log.Info().Str("address", conf.DownloadAddr).Msg("Starting download server")
 		return download.ListenAndServe()
 	})
 
 	updates := NewUpdates(conf, cache)
 	group.Go(func() error {
-		log.Info().Str("address", conf.UpdatesAddr).Msg("starting updates server")
+		log.Info().Str("address", conf.UpdatesAddr).Msg("Starting updates server")
 		return updates.ListenAndServe()
 	})
 
 	debug := NewDebug(conf, cache)
 	if debug != nil {
 		group.Go(func() error {
-			log.Info().Str("address", conf.DebugAddr).Msg("starting debug pprof server")
+			log.Info().Str("address", conf.DebugAddr).Msg("Starting debug pprof server")
 			return debug.ListenAndServe()
 		})
 	}
@@ -47,15 +47,15 @@ func ListenAndServe(ctx context.Context, conf *config.Config, cache *redis.Clien
 	defer shutdownCancel()
 
 	group.Go(func() error {
-		log.Info().Msg("stopping download server")
+		log.Info().Msg("Stopping download server")
 		return download.Shutdown(shutdownCtx)
 	})
 	group.Go(func() error {
-		log.Info().Msg("stopping updates server")
+		log.Info().Msg("Stopping updates server")
 		return updates.Shutdown(shutdownCtx)
 	})
 	group.Go(func() error {
-		log.Info().Msg("stopping debug pprof server")
+		log.Info().Msg("Stopping debug pprof server")
 		return debug.Shutdown(shutdownCtx)
 	})
 

@@ -21,7 +21,7 @@ func Proxy(conf *config.Config, cache *redis.Client, host string) http.HandlerFu
 
 		upstreamReq, err := http.NewRequestWithContext(r.Context(), r.Method, u.String(), r.Body)
 		if err != nil {
-			log.Err(err).Msg("failed to create request")
+			log.Err(err).Msg("Failed to create request")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -41,13 +41,13 @@ func Proxy(conf *config.Config, cache *redis.Client, host string) http.HandlerFu
 		}()
 
 		if upstreamResp, err = cache.Get(r.Context(), upstreamReq, conf.HTTPTimeout); err == nil {
-			log.Trace().Msg("using cached response")
+			log.Trace().Msg("Using cached response")
 			cacheStatus = CacheHit
 		} else if errors.Is(err, redis.ErrNotExist) {
-			log.Trace().Msg("forwarding request to upstream")
+			log.Trace().Msg("Forwarding request to upstream")
 			upstreamResp, err = http.DefaultClient.Do(upstreamReq)
 			if err != nil {
-				log.Err(err).Msg("failed to forward to upstream")
+				log.Err(err).Msg("Failed to forward to upstream")
 				http.Error(w, err.Error(), http.StatusServiceUnavailable)
 				return
 			}
@@ -56,7 +56,7 @@ func Proxy(conf *config.Config, cache *redis.Client, host string) http.HandlerFu
 				if cacheWriter, err := cache.NewWriter(r.Context(), upstreamReq, upstreamResp, conf.CacheDuration); err == nil {
 					defer func() {
 						if err := cacheWriter.Close(); err != nil {
-							log.Err(err).Msg("failed to close cache")
+							log.Err(err).Msg("Failed to close cache")
 						}
 					}()
 
@@ -64,13 +64,13 @@ func Proxy(conf *config.Config, cache *redis.Client, host string) http.HandlerFu
 					wrapped.Tee(cacheWriter)
 					w = wrapped
 				} else {
-					log.Err(err).Msg("failed to cache response")
+					log.Err(err).Msg("Failed to cache response")
 				}
 			} else {
 				cacheStatus = CacheBypass
 			}
 		} else {
-			log.Trace().Err(err).Msg("failed to get cached response")
+			log.Trace().Err(err).Msg("Failed to get cached response")
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)
 			return
 		}
