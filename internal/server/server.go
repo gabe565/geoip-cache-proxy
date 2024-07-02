@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	_ "net/http/pprof" //nolint:gosec
 	"time"
 
 	"github.com/gabe565/geoip-cache-proxy/internal/config"
@@ -91,10 +90,13 @@ func NewUpdates(conf *config.Config, cache *redis.Client) *http.Server {
 
 func NewDebug(conf *config.Config, cache *redis.Client) *http.Server {
 	if conf.DebugAddr != "" {
-		http.Handle("/livez", api.Live())
-		http.Handle("/readyz", http.TimeoutHandler(api.Ready(cache), conf.HTTPTimeout, "timeout exceeded"))
+		r := newMux(conf)
+		r.Get("/livez", api.Live())
+		r.Get("/readyz", api.Ready(cache))
+		r.Mount("/debug", middleware.Profiler())
 		return &http.Server{
 			Addr:           conf.DebugAddr,
+			Handler:        r,
 			ReadTimeout:    10 * time.Second,
 			MaxHeaderBytes: 1024 * 1024, // 1MiB
 		}
