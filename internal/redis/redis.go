@@ -52,7 +52,7 @@ func (c *Client) Ping(ctx context.Context) error {
 }
 
 func FormatCacheKey(req *http.Request) string {
-	u := req.URL
+	u := *req.URL
 	q := u.Query()
 	q.Del("db_md5")
 	u.RawQuery = q.Encode()
