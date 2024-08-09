@@ -102,7 +102,7 @@ func upstreamURL(host string, r *http.Request, translatePaths bool) url.URL {
 
 		matches := pat.FindStringSubmatch(u.Path)
 		if len(matches) > 1 {
-			newPath := fmt.Sprintf("%s/dowload?suffix=tar.gz", matches[1])
+			newPath := fmt.Sprintf("%s/download?suffix=tar.gz", matches[1])
 			log.Debug().Msg(fmt.Sprintf("translating %s into %s", u.Path, newPath))
 			u.Path = newPath
 		}
