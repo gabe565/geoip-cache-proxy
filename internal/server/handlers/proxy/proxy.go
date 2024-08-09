@@ -2,9 +2,11 @@ package proxy
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 
 	"github.com/gabe565/geoip-cache-proxy/internal/config"
@@ -16,7 +18,7 @@ import (
 
 func Proxy(conf *config.Config, cache *redis.Client, host string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		u := upstreamURL(host, r)
+		u := upstreamURL(host, r, conf.TranslateIngressNginxPaths)
 		log := log.Ctx(r.Context()).With().Str("upstreamUrl", u.String()).Logger()
 
 		upstreamReq, err := http.NewRequestWithContext(r.Context(), r.Method, u.String(), r.Body)
@@ -85,10 +87,27 @@ func Proxy(conf *config.Config, cache *redis.Client, host string) http.HandlerFu
 	}
 }
 
-func upstreamURL(host string, r *http.Request) url.URL {
+func upstreamURL(host string, r *http.Request, translatePaths bool) url.URL {
 	u := *r.URL
 	u.Scheme = "https"
 	u.Host = host
+
+	// If configured to do so, we want to translate a path like:
+	//   https://download.maxmind.com/geoip/databases/GeoLite2-Country.tar.gz
+	// to:
+	//   https://download.maxmind.com/geoip/databases/GeoLite2-Country/download?suffix=tar.gz
+	if translatePaths {
+		log.Debug().Msg("translating paths for ingress-nginx")
+		pat := regexp.MustCompile(`(.+)\.tar\.gz`)
+
+		matches := pat.FindStringSubmatch(u.Path)
+		if len(matches) > 1 {
+			newPath := fmt.Sprintf("%s/dowload?suffix=tar.gz", matches[1])
+			log.Debug().Msg(fmt.Sprintf("translating %s into %s", u.Path, newPath))
+			u.Path = newPath
+		}
+	}
+
 	return u
 }
 
