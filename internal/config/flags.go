@@ -51,5 +51,5 @@ func (c *Config) RegisterFlags(cmd *cobra.Command) {
 
 	cmd.Flags().StringVar(&c.DebugAddr, FlagDebugAddr, c.DebugAddr, "Debug pprof listen address")
 
-	cmd.Flags().BoolVarP(&c.TranslateIngressNginxPaths, FlagTranslateIngressNginxUrls, "", false, "Whether to translate Ingress-Nginx's expected file names to Maxmind paths.")
+	cmd.Flags().BoolVarP(&c.TranslateIngressNginxPaths, FlagTranslateIngressNginxUrls, "", true, "Automatically translate ingress-nginx's expected file names to Maxmind paths.")
 }
