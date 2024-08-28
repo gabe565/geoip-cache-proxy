@@ -3,7 +3,7 @@ module github.com/gabe565/geoip-cache-proxy
 go 1.22.5
 
 require (
-	github.com/go-chi/chi/v5 v5.0.12
+	github.com/go-chi/chi/v5 v5.1.0
 	github.com/mattn/go-isatty v0.0.20
 	github.com/redis/rueidis v1.0.44
 	github.com/rs/zerolog v1.33.0
