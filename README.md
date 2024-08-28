@@ -17,7 +17,7 @@ When run, geoip-cache-proxy will start different servers for each MaxMind endpoi
 - `localhost:8081` will proxy requests to `download.maxmind.com`
 - `localhost:6060` will serve health checks and a pprof endpoint.
 
-For a full list of configuration options, see the command [docs](docs/geoip-cache-proxy.md).
+For a full list of configuration options, see the [command-line docs](docs/geoip-cache-proxy.md) and [environment variable reference](docs/envs.md).
 
 Any flag can be provided as an env by capitaling it, changing `-` to `_`, and prefixing it with `GEOIP_`.  
 For example `--cache-duration=12h` could also be configured with the env `GEOIP_CACHE_DURATION=12h`.
