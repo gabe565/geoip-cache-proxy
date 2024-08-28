@@ -88,11 +88,16 @@ func NewUpdates(conf *config.Config, cache *redis.Client) *http.Server {
 	}
 }
 
+const (
+	LivePath  = "/livez"
+	ReadyPath = "/readyz"
+)
+
 func NewDebug(conf *config.Config, cache *redis.Client) *http.Server {
 	if conf.DebugAddr != "" {
 		r := newMux(conf)
-		r.Get("/livez", api.Live())
-		r.Get("/readyz", api.Ready(cache))
+		r.Get(LivePath, api.Live())
+		r.Get(ReadyPath, api.Ready(cache))
 		r.Mount("/debug", middleware.Profiler())
 		return &http.Server{
 			Addr:           conf.DebugAddr,
@@ -107,7 +112,9 @@ func NewDebug(conf *config.Config, cache *redis.Client) *http.Server {
 func newMux(conf *config.Config) *chi.Mux {
 	r := chi.NewMux()
 	r.Use(middleware.RealIP)
-	r.Use(geoipmiddleware.Log)
+	r.Use(geoipmiddleware.Log(geoipmiddleware.LogConfig{
+		ExcludePaths: []string{LivePath, ReadyPath},
+	}))
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(conf.HTTPTimeout))
 	r.Get("/robots.txt", handlers.RobotsTxt)

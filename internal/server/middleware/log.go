@@ -11,35 +11,48 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-func Log(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
+type LogConfig struct {
+	ExcludePaths []string
+}
 
-		logger := slog.With(
-			"method", r.Method,
-			"requestUrl", r.URL.String(),
-			"remoteIP", r.RemoteAddr,
-			"userAgent", r.UserAgent(),
-			"protocol", r.Proto,
-		)
+func Log(conf LogConfig) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			for _, p := range conf.ExcludePaths {
+				if r.URL.Path == p {
+					next.ServeHTTP(w, r)
+					return
+				}
+			}
 
-		resp := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
-		ctx := NewLogContext(r.Context(), logger)
-		next.ServeHTTP(resp, r.WithContext(ctx))
+			start := time.Now()
 
-		level := slog.LevelDebug
-		if resp.Status() >= 400 {
-			level = slog.LevelInfo
-		}
+			logger := slog.With(
+				"method", r.Method,
+				"requestUrl", r.URL.String(),
+				"remoteIP", r.RemoteAddr,
+				"userAgent", r.UserAgent(),
+				"protocol", r.Proto,
+			)
 
-		logger.Log(ctx, level, "Served request",
-			"elapsed", time.Since(start).Round(time.Millisecond).String(),
-			"status", strconv.Itoa(resp.Status()),
-			"bytes", strconv.Itoa(resp.BytesWritten()),
-			"upstreamUrl", resp.Header().Get(consts.UpstreamURLHeader),
-			"cacheStatus", resp.Header().Get(consts.CacheStatusHeader),
-		)
-	})
+			resp := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
+			ctx := NewLogContext(r.Context(), logger)
+			next.ServeHTTP(resp, r.WithContext(ctx))
+
+			level := slog.LevelDebug
+			if resp.Status() >= 400 {
+				level = slog.LevelInfo
+			}
+
+			logger.Log(ctx, level, "Served request",
+				"elapsed", time.Since(start).Round(time.Millisecond).String(),
+				"status", strconv.Itoa(resp.Status()),
+				"bytes", strconv.Itoa(resp.BytesWritten()),
+				"upstreamUrl", resp.Header().Get(consts.UpstreamURLHeader),
+				"cacheStatus", resp.Header().Get(consts.CacheStatusHeader),
+			)
+		})
+	}
 }
 
 type ctxKey uint8
