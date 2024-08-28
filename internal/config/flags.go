@@ -25,6 +25,8 @@ const (
 	FlagCacheDuration = "cache-duration"
 
 	FlagDebugAddr = "debug-addr"
+
+	FlagTranslateIngressNginxUrls = "translate-ingress-nginx-urls"
 )
 
 func (c *Config) RegisterFlags(cmd *cobra.Command) {
@@ -48,4 +50,6 @@ func (c *Config) RegisterFlags(cmd *cobra.Command) {
 	cmd.Flags().DurationVar(&c.CacheDuration, FlagCacheDuration, c.CacheDuration, "Length of time to cache MaxMind response")
 
 	cmd.Flags().StringVar(&c.DebugAddr, FlagDebugAddr, c.DebugAddr, "Debug pprof listen address")
+
+	cmd.Flags().BoolVarP(&c.TranslateIngressNginxPaths, FlagTranslateIngressNginxUrls, "", true, "Automatically translate ingress-nginx's expected file names to Maxmind paths.")
 }

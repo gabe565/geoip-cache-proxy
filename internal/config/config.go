@@ -27,6 +27,8 @@ type Config struct {
 	CacheDuration time.Duration
 
 	DebugAddr string
+
+	TranslateIngressNginxPaths bool
 }
 
 func NewDefault() *Config {
