@@ -2,8 +2,8 @@ package proxy
 
 import (
 	"errors"
-	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"path"
@@ -13,18 +13,22 @@ import (
 	"github.com/gabe565/geoip-cache-proxy/internal/config"
 	"github.com/gabe565/geoip-cache-proxy/internal/redis"
 	"github.com/gabe565/geoip-cache-proxy/internal/server/consts"
+	geoipmiddleware "github.com/gabe565/geoip-cache-proxy/internal/server/middleware"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/rs/zerolog/log"
 )
 
 func Proxy(conf *config.Config, cache *redis.Client, host string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		u := upstreamURL(host, r, conf.TranslateIngressNginxPaths)
-		log := log.Ctx(r.Context()).With().Str("upstreamUrl", u.String()).Logger()
+		logger, ok := geoipmiddleware.LogFromContext(r.Context())
+		if !ok {
+			logger = slog.Default()
+		}
+		logger = logger.With("upstreamURL", u.String())
 
 		upstreamReq, err := http.NewRequestWithContext(r.Context(), r.Method, u.String(), r.Body)
 		if err != nil {
-			log.Err(err).Msg("Failed to create request")
+			logger.Error("Failed to create request", "error", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -44,13 +48,13 @@ func Proxy(conf *config.Config, cache *redis.Client, host string) http.HandlerFu
 		}()
 
 		if upstreamResp, err = cache.Get(r.Context(), upstreamReq, conf.HTTPTimeout); err == nil {
-			log.Trace().Msg("Using cached response")
+			logger.Log(r.Context(), config.LevelTrace, "Using cached response")
 			cacheStatus = CacheHit
 		} else if errors.Is(err, redis.ErrNotExist) {
-			log.Trace().Msg("Forwarding request to upstream")
+			logger.Log(r.Context(), config.LevelTrace, "Forwarding request to upstream")
 			upstreamResp, err = http.DefaultClient.Do(upstreamReq)
 			if err != nil {
-				log.Err(err).Msg("Failed to forward to upstream")
+				logger.Error("Failed to forward to upstream", "error", err)
 				http.Error(w, err.Error(), http.StatusServiceUnavailable)
 				return
 			}
@@ -59,7 +63,7 @@ func Proxy(conf *config.Config, cache *redis.Client, host string) http.HandlerFu
 				if cacheWriter, err := cache.NewWriter(r.Context(), upstreamReq, upstreamResp, conf.CacheDuration); err == nil {
 					defer func() {
 						if err := cacheWriter.Close(); err != nil {
-							log.Err(err).Msg("Failed to close cache")
+							logger.Error("Failed to close cache", "error", err)
 						}
 					}()
 
@@ -67,13 +71,13 @@ func Proxy(conf *config.Config, cache *redis.Client, host string) http.HandlerFu
 					wrapped.Tee(cacheWriter)
 					w = wrapped
 				} else {
-					log.Err(err).Msg("Failed to cache response")
+					logger.Error("Failed to cache response", "error", err)
 				}
 			} else {
 				cacheStatus = CacheBypass
 			}
 		} else {
-			log.Trace().Err(err).Msg("Failed to get cached response")
+			logger.Warn("Failed to get cached response", "error", err)
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)
 			return
 		}
@@ -98,10 +102,9 @@ func upstreamURL(host string, r *http.Request, translatePaths bool) url.URL {
 	// to:
 	//   https://download.maxmind.com/geoip/databases/GeoLite2-Country/download?suffix=tar.gz
 	if translatePaths {
-		log.Debug().Msg("translating paths for ingress-nginx")
 		if p, found := strings.CutSuffix(u.Path, ".tar.gz"); found {
 			newPath := path.Join(p, "download")
-			log.Debug().Msg(fmt.Sprintf("translating %s into %s", u.Path, newPath))
+			slog.Debug("Translate path", "from", u.Path, "to", newPath)
 			u.Path = newPath
 			q := u.Query()
 			q.Set("suffix", "tar.gz")

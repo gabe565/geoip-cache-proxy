@@ -1,15 +1,17 @@
 package main
 
 import (
+	"log/slog"
 	"os"
 
 	"github.com/gabe565/geoip-cache-proxy/cmd"
-	"github.com/rs/zerolog/log"
+	"github.com/gabe565/geoip-cache-proxy/internal/config"
 )
 
 func main() {
+	config.InitLog(os.Stderr, slog.LevelInfo, config.FormatAuto)
 	if err := cmd.New().Execute(); err != nil {
-		log.Err(err).Msg("Exiting due to an error")
+		slog.Error(err.Error())
 		os.Exit(1)
 	}
 }

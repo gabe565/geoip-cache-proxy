@@ -2,10 +2,10 @@ package api
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/gabe565/geoip-cache-proxy/internal/redis"
-	"github.com/rs/zerolog/log"
 )
 
 func Live() http.HandlerFunc {
@@ -20,7 +20,7 @@ func Ready(cache *redis.Client) http.HandlerFunc {
 		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 		if err := cache.Ping(r.Context()); err != nil {
 			err = fmt.Errorf("failed to connect to redis: %w", err)
-			log.Err(err).Msg("Readiness check failed")
+			slog.Error("Readiness check failed", "error", err)
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)
 			return
 		}

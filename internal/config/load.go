@@ -22,7 +22,7 @@ func (c *Config) Load(cmd *cobra.Command) error {
 			}
 		}
 	})
-	initLog(cmd)
+	c.InitLog(cmd.ErrOrStderr())
 	return errors.Join(errs...)
 }
 

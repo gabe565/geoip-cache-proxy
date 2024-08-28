@@ -17,8 +17,8 @@ geoip-cache-proxy [flags]
   -h, --help                           help for geoip-cache-proxy
       --http-timeout duration          HTTP request timeout (default 30s)
       --license-key string             MaxMind license key
-      --log-format string              Log format (auto, color, plain, json) (default "auto")
-  -l, --log-level string               Log level (trace, debug, info, warn, error, fatal, panic) (default "info")
+      --log-format string              Log format (one of auto, color, plain, json) (default "auto")
+  -l, --log-level string               Log level (one of trace, debug, info, warn, error) (default "info")
       --redis-db int                   Redis database
       --redis-host string              Redis host (default "localhost")
       --redis-password string          Redis password

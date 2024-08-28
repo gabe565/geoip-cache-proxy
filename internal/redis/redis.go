@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"io"
+	"log/slog"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -16,7 +17,6 @@ import (
 	"github.com/gabe565/geoip-cache-proxy/internal/config"
 	"github.com/gabe565/geoip-cache-proxy/internal/util"
 	"github.com/redis/rueidis"
-	"github.com/rs/zerolog/log"
 )
 
 //nolint:gochecknoglobals
@@ -38,12 +38,12 @@ func Connect(conf *config.Config) (*Client, error) {
 		return nil, err
 	}
 
-	log.Info().Str("addr", addr).Int("db", conf.RedisDB).Msg("Connected to redis")
+	slog.Info("Connected to redis", "address", addr, "db", conf.RedisDB)
 	return &Client{client}, nil
 }
 
 func (c *Client) Close() {
-	log.Info().Msg("Disconnecting from redis")
+	slog.Info("Disconnecting from redis")
 	c.Client.Close()
 }
 

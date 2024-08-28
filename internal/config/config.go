@@ -1,14 +1,14 @@
 package config
 
 import (
+	"log/slog"
+	"strings"
 	"time"
-
-	"github.com/rs/zerolog"
 )
 
 type Config struct {
-	LogLevel  string
-	LogFormat string
+	logLevel  string
+	logFormat string
 
 	RedisHost     string
 	RedisPort     uint16
@@ -33,8 +33,8 @@ type Config struct {
 
 func NewDefault() *Config {
 	return &Config{
-		LogLevel:  zerolog.LevelInfoValue,
-		LogFormat: FormatAuto,
+		logLevel:  strings.ToLower(slog.LevelInfo.String()),
+		logFormat: FormatAuto.String(),
 
 		RedisHost: "localhost",
 		RedisPort: 6379,

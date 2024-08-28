@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -14,7 +15,6 @@ import (
 	geoipmiddleware "github.com/gabe565/geoip-cache-proxy/internal/server/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -23,20 +23,20 @@ func ListenAndServe(ctx context.Context, conf *config.Config, cache *redis.Clien
 
 	download := NewDownload(conf, cache)
 	group.Go(func() error {
-		log.Info().Str("address", conf.DownloadAddr).Msg("Starting download server")
+		slog.Info("Starting download server", "address", conf.DownloadAddr)
 		return download.ListenAndServe()
 	})
 
 	updates := NewUpdates(conf, cache)
 	group.Go(func() error {
-		log.Info().Str("address", conf.UpdatesAddr).Msg("Starting updates server")
+		slog.Info("Starting updates server", "address", conf.UpdatesAddr)
 		return updates.ListenAndServe()
 	})
 
 	debug := NewDebug(conf, cache)
 	if debug != nil {
 		group.Go(func() error {
-			log.Info().Str("address", conf.DebugAddr).Msg("Starting debug pprof server")
+			slog.Info("Starting debug pprof server", "address", conf.DebugAddr)
 			return debug.ListenAndServe()
 		})
 	}
@@ -46,15 +46,15 @@ func ListenAndServe(ctx context.Context, conf *config.Config, cache *redis.Clien
 	defer shutdownCancel()
 
 	group.Go(func() error {
-		log.Info().Msg("Stopping download server")
+		slog.Info("Stopping download server")
 		return download.Shutdown(shutdownCtx)
 	})
 	group.Go(func() error {
-		log.Info().Msg("Stopping updates server")
+		slog.Info("Stopping updates server")
 		return updates.Shutdown(shutdownCtx)
 	})
 	group.Go(func() error {
-		log.Info().Msg("Stopping debug pprof server")
+		slog.Info("Stopping debug pprof server")
 		return debug.Shutdown(shutdownCtx)
 	})
 

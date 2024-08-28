@@ -1,6 +1,8 @@
 package config
 
 import (
+	"strings"
+
 	"github.com/spf13/cobra"
 )
 
@@ -30,8 +32,8 @@ const (
 )
 
 func (c *Config) RegisterFlags(cmd *cobra.Command) {
-	cmd.Flags().StringVarP(&c.LogLevel, FlagLogLevel, "l", c.LogLevel, "Log level (trace, debug, info, warn, error, fatal, panic)")
-	cmd.Flags().StringVar(&c.LogFormat, FlagLogFormat, c.LogFormat, "Log format (auto, color, plain, json)")
+	cmd.Flags().StringVarP(&c.logLevel, FlagLogLevel, "l", c.logLevel, "Log level (one of trace, debug, info, warn, error)")
+	cmd.Flags().StringVar(&c.logFormat, FlagLogFormat, c.logFormat, "Log format (one of "+strings.Join(LogFormatStrings(), ", ")+")")
 
 	cmd.Flags().StringVar(&c.RedisHost, FlagRedisHost, c.RedisHost, "Redis host")
 	cmd.Flags().Uint16Var(&c.RedisPort, FlagRedisPort, c.RedisPort, "Redis port")

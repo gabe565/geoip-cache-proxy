@@ -1,7 +1,9 @@
 package config
 
 import (
-	"github.com/rs/zerolog"
+	"log/slog"
+	"strings"
+
 	"github.com/spf13/cobra"
 )
 
@@ -9,13 +11,11 @@ func RegisterCompletions(cmd *cobra.Command) {
 	if err := cmd.RegisterFlagCompletionFunc(FlagLogLevel,
 		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			return []string{
-				zerolog.LevelTraceValue,
-				zerolog.LevelDebugValue,
-				zerolog.LevelInfoValue,
-				zerolog.LevelWarnValue,
-				zerolog.LevelErrorValue,
-				zerolog.LevelFatalValue,
-				zerolog.LevelPanicValue,
+				"trace",
+				strings.ToLower(slog.LevelDebug.String()),
+				strings.ToLower(slog.LevelInfo.String()),
+				strings.ToLower(slog.LevelWarn.String()),
+				strings.ToLower(slog.LevelError.String()),
 			}, cobra.ShellCompDirectiveNoFileComp
 		},
 	); err != nil {
@@ -24,7 +24,7 @@ func RegisterCompletions(cmd *cobra.Command) {
 
 	if err := cmd.RegisterFlagCompletionFunc(FlagLogFormat,
 		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
-			return []string{FormatAuto, FormatColor, FormatPlain, FormatJSON}, cobra.ShellCompDirectiveNoFileComp
+			return LogFormatStrings(), cobra.ShellCompDirectiveNoFileComp
 		},
 	); err != nil {
 		panic(err)

@@ -1,65 +1,63 @@
 package config
 
 import (
-	"io"
-	"os"
+	"log/slog"
 	"testing"
 
-	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func Test_logLevel(t *testing.T) {
-	type args struct {
-		level string
+func TestConfig_LogLevel(t *testing.T) {
+	type fields struct {
+		logLevel string
 	}
 	tests := []struct {
-		name string
-		args args
-		want zerolog.Level
+		name    string
+		fields  fields
+		want    slog.Level
+		wantErr require.ErrorAssertionFunc
 	}{
-		{"trace", args{"trace"}, zerolog.TraceLevel},
-		{"debug", args{"debug"}, zerolog.DebugLevel},
-		{"info", args{"info"}, zerolog.InfoLevel},
-		{"warning", args{"warning"}, zerolog.WarnLevel},
-		{"error", args{"error"}, zerolog.ErrorLevel},
-		{"fatal", args{"fatal"}, zerolog.FatalLevel},
-		{"panic", args{"panic"}, zerolog.PanicLevel},
-		{"unknown", args{""}, zerolog.InfoLevel},
+		{"trace", fields{"trace"}, LevelTrace, require.NoError},
+		{"debug", fields{"debug"}, slog.LevelDebug, require.NoError},
+		{"info", fields{"info"}, slog.LevelInfo, require.NoError},
+		{"warning", fields{"warn"}, slog.LevelWarn, require.NoError},
+		{"error", fields{"error"}, slog.LevelError, require.NoError},
+		{"unknown", fields{""}, slog.LevelInfo, require.Error},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := logLevel(tt.args.level)
+			c := &Config{logLevel: tt.fields.logLevel}
+			got, err := c.LogLevel()
+			tt.wantErr(t, err)
 			assert.Equal(t, tt.want, got)
 		})
 	}
 }
 
-func Test_logFormat(t *testing.T) {
-	type args struct {
-		format string
+func Test_LogFormat(t *testing.T) {
+	type fields struct {
+		logFormat string
 	}
 	tests := []struct {
-		name string
-		args args
-		want io.Writer
+		name    string
+		fields  fields
+		want    LogFormat
+		wantErr require.ErrorAssertionFunc
 	}{
-		{"default", args{"auto"}, zerolog.ConsoleWriter{Out: os.Stderr, NoColor: true}},
-		{"color", args{"color"}, zerolog.ConsoleWriter{Out: os.Stderr}},
-		{"plain", args{"plain"}, zerolog.ConsoleWriter{Out: os.Stderr, NoColor: true}},
-		{"json", args{"json"}, os.Stderr},
-		{"unknown", args{""}, zerolog.ConsoleWriter{Out: os.Stderr, NoColor: true}},
+		{"default", fields{"auto"}, FormatAuto, require.NoError},
+		{"color", fields{"color"}, FormatColor, require.NoError},
+		{"plain", fields{"plain"}, FormatPlain, require.NoError},
+		{"json", fields{"json"}, FormatJSON, require.NoError},
+		{"unknown", fields{""}, FormatAuto, require.Error},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := logFormat(os.Stderr, tt.args.format)
+			c := &Config{logFormat: tt.fields.logFormat}
+			got, err := c.LogFormat()
+			tt.wantErr(t, err)
 			require.IsType(t, tt.want, got)
-			if want, ok := tt.want.(zerolog.ConsoleWriter); ok {
-				got := got.(zerolog.ConsoleWriter)
-				assert.Equal(t, want.Out, got.Out)
-				assert.Equal(t, want.NoColor, got.NoColor)
-			}
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

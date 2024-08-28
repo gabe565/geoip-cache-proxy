@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
@@ -10,7 +11,6 @@ import (
 	"github.com/gabe565/geoip-cache-proxy/internal/config"
 	"github.com/gabe565/geoip-cache-proxy/internal/redis"
 	"github.com/gabe565/geoip-cache-proxy/internal/server"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -51,7 +51,7 @@ func run(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	log.Info().Str("version", version).Str("commit", cmd.Annotations["commit"]).Msg("GeoIP caching proxy")
+	slog.Info("GeoIP caching proxy", "version", version, "commit", cmd.Annotations["commit"])
 
 	ctx, cancel := signal.NotifyContext(cmd.Context(), os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
 	defer cancel()
