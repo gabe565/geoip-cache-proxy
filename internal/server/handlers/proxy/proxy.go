@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"net/url"
 	"path"
-	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/gabe565/geoip-cache-proxy/internal/config"
 	"github.com/gabe565/geoip-cache-proxy/internal/redis"
@@ -99,11 +99,8 @@ func upstreamURL(host string, r *http.Request, translatePaths bool) url.URL {
 	//   https://download.maxmind.com/geoip/databases/GeoLite2-Country/download?suffix=tar.gz
 	if translatePaths {
 		log.Debug().Msg("translating paths for ingress-nginx")
-		pat := regexp.MustCompile(`(.+)\.tar\.gz`)
-
-		matches := pat.FindStringSubmatch(u.Path)
-		if len(matches) > 1 {
-			newPath := path.Join(matches[1], "download")
+		if p, found := strings.CutSuffix(u.Path, ".tar.gz"); found {
+			newPath := path.Join(p, "download")
 			log.Debug().Msg(fmt.Sprintf("translating %s into %s", u.Path, newPath))
 			u.Path = newPath
 			q := u.Query()
