@@ -106,7 +106,9 @@ func upstreamURL(host string, r *http.Request, translatePaths bool) url.URL {
 			newPath := path.Join(matches[1], "download")
 			log.Debug().Msg(fmt.Sprintf("translating %s into %s", u.Path, newPath))
 			u.Path = newPath
-			u.RawQuery = "suffix=tar.gz"
+			q := u.Query()
+			q.Set("suffix", "tar.gz")
+			u.RawQuery = q.Encode()
 		}
 	}
 
