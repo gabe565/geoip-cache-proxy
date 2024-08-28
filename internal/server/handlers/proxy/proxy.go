@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"path"
 	"regexp"
 	"strconv"
 
@@ -102,7 +103,7 @@ func upstreamURL(host string, r *http.Request, translatePaths bool) url.URL {
 
 		matches := pat.FindStringSubmatch(u.Path)
 		if len(matches) > 1 {
-			newPath := fmt.Sprintf("%s/download", matches[1])
+			newPath := path.Join(matches[1], "download")
 			log.Debug().Msg(fmt.Sprintf("translating %s into %s", u.Path, newPath))
 			u.Path = newPath
 			u.RawQuery = "suffix=tar.gz"

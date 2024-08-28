@@ -1,10 +1,11 @@
 package proxy
 
 import (
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/url"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestUpstreamUrl(t *testing.T) {
@@ -36,7 +37,7 @@ func TestUpstreamUrl(t *testing.T) {
 			}
 
 			host := u.Host
-			req, err := http.NewRequest(http.MethodGet, tc.url, nil)
+			req, err := http.NewRequest(http.MethodGet, tc.url, nil) //nolint:noctx
 			if err != nil {
 				t.Errorf("failed creating http request to %q: %s", tc.url, err)
 			}
@@ -44,8 +45,6 @@ func TestUpstreamUrl(t *testing.T) {
 			actual := upstreamURL(host, req, tc.translate)
 
 			assert.Equal(t, tc.expected, actual.String(), "upstreamUrl does not meet expectations")
-
 		})
 	}
-
 }
