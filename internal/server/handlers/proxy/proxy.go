@@ -10,10 +10,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gabe565/geoip-cache-proxy/internal/config"
-	"github.com/gabe565/geoip-cache-proxy/internal/redis"
-	"github.com/gabe565/geoip-cache-proxy/internal/server/consts"
-	geoipmiddleware "github.com/gabe565/geoip-cache-proxy/internal/server/middleware"
+	"gabe565.com/geoip-cache-proxy/internal/config"
+	"gabe565.com/geoip-cache-proxy/internal/redis"
+	"gabe565.com/geoip-cache-proxy/internal/server/consts"
+	geoipmiddleware "gabe565.com/geoip-cache-proxy/internal/server/middleware"
 	"github.com/go-chi/chi/v5/middleware"
 )
 

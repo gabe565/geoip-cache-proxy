@@ -14,8 +14,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gabe565/geoip-cache-proxy/internal/config"
-	"github.com/gabe565/geoip-cache-proxy/internal/util"
+	"gabe565.com/geoip-cache-proxy/internal/config"
+	"gabe565.com/geoip-cache-proxy/internal/util"
 	"github.com/redis/rueidis"
 )
 

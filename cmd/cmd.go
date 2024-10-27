@@ -8,9 +8,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/gabe565/geoip-cache-proxy/internal/config"
-	"github.com/gabe565/geoip-cache-proxy/internal/redis"
-	"github.com/gabe565/geoip-cache-proxy/internal/server"
+	"gabe565.com/geoip-cache-proxy/internal/config"
+	"gabe565.com/geoip-cache-proxy/internal/redis"
+	"gabe565.com/geoip-cache-proxy/internal/server"
 	"github.com/spf13/cobra"
 )
 

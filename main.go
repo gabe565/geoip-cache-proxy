@@ -4,8 +4,8 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/gabe565/geoip-cache-proxy/cmd"
-	"github.com/gabe565/geoip-cache-proxy/internal/config"
+	"gabe565.com/geoip-cache-proxy/cmd"
+	"gabe565.com/geoip-cache-proxy/internal/config"
 )
 
 var version = "beta"

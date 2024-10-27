@@ -1,4 +1,4 @@
-module github.com/gabe565/geoip-cache-proxy
+module gabe565.com/geoip-cache-proxy
 
 go 1.23.0
 

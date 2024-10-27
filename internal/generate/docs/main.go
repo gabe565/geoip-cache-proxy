@@ -10,8 +10,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/gabe565/geoip-cache-proxy/cmd"
-	"github.com/gabe565/geoip-cache-proxy/internal/config"
+	"gabe565.com/geoip-cache-proxy/cmd"
+	"gabe565.com/geoip-cache-proxy/internal/config"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"

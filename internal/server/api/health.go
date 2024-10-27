@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/gabe565/geoip-cache-proxy/internal/redis"
+	"gabe565.com/geoip-cache-proxy/internal/redis"
 )
 
 func Live() http.HandlerFunc {

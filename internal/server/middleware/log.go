@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gabe565/geoip-cache-proxy/internal/server/consts"
+	"gabe565.com/geoip-cache-proxy/internal/server/consts"
 	"github.com/go-chi/chi/v5/middleware"
 )
 
