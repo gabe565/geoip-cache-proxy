@@ -1,6 +1,6 @@
 module gabe565.com/geoip-cache-proxy
 
-go 1.23.0
+go 1.23.3
 
 require (
 	github.com/dmarkham/enumer v1.5.10
