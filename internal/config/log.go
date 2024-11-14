@@ -3,12 +3,11 @@ package config
 import (
 	"io"
 	"log/slog"
-	"os"
 	"strings"
 	"time"
 
+	"gabe565.com/utils/termx"
 	"github.com/lmittmann/tint"
-	"github.com/mattn/go-isatty"
 )
 
 const LevelTrace = slog.Level(-5)
@@ -78,9 +77,7 @@ func InitLog(w io.Writer, level slog.Level, format LogFormat) {
 		var color bool
 		switch format {
 		case FormatAuto:
-			if f, ok := w.(*os.File); ok {
-				color = isatty.IsTerminal(f.Fd()) || isatty.IsCygwinTerminal(f.Fd())
-			}
+			color = termx.IsColor(w)
 		case FormatColor:
 			color = true
 		}
