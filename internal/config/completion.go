@@ -4,11 +4,12 @@ import (
 	"log/slog"
 	"strings"
 
+	"gabe565.com/utils/must"
 	"github.com/spf13/cobra"
 )
 
 func RegisterCompletions(cmd *cobra.Command) {
-	if err := cmd.RegisterFlagCompletionFunc(FlagLogLevel,
+	must.Must(cmd.RegisterFlagCompletionFunc(FlagLogLevel,
 		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			return []string{
 				"trace",
@@ -18,17 +19,13 @@ func RegisterCompletions(cmd *cobra.Command) {
 				strings.ToLower(slog.LevelError.String()),
 			}, cobra.ShellCompDirectiveNoFileComp
 		},
-	); err != nil {
-		panic(err)
-	}
+	))
 
-	if err := cmd.RegisterFlagCompletionFunc(FlagLogFormat,
+	must.Must(cmd.RegisterFlagCompletionFunc(FlagLogFormat,
 		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			return LogFormatStrings(), cobra.ShellCompDirectiveNoFileComp
 		},
-	); err != nil {
-		panic(err)
-	}
+	))
 
 	npCompFlags := []string{
 		FlagRedisHost,
@@ -45,8 +42,6 @@ func RegisterCompletions(cmd *cobra.Command) {
 		FlagDebugAddr,
 	}
 	for _, name := range npCompFlags {
-		if err := cmd.RegisterFlagCompletionFunc(name, cobra.NoFileCompletions); err != nil {
-			panic(err)
-		}
+		must.Must(cmd.RegisterFlagCompletionFunc(name, cobra.NoFileCompletions))
 	}
 }
