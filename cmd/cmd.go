@@ -11,10 +11,11 @@ import (
 	"gabe565.com/geoip-cache-proxy/internal/config"
 	"gabe565.com/geoip-cache-proxy/internal/redis"
 	"gabe565.com/geoip-cache-proxy/internal/server"
+	"gabe565.com/utils/cobrax"
 	"github.com/spf13/cobra"
 )
 
-func New(opts ...Option) *cobra.Command {
+func New(opts ...cobrax.Option) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "geoip-cache-proxy",
 		Short: "A GeoIP database caching proxy",
@@ -49,10 +50,7 @@ func run(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	slog.Info("GeoIP caching proxy",
-		"version", cmd.Annotations[VersionKey],
-		"commit", cmd.Annotations[CommitKey],
-	)
+	slog.Info("GeoIP caching proxy", "version", cobrax.GetVersion(cmd), "commit", cobrax.GetCommit(cmd))
 
 	ctx, cancel := signal.NotifyContext(cmd.Context(), os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
 	defer cancel()
