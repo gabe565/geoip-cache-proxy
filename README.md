@@ -24,4 +24,6 @@ For example `--cache-duration=12h` could also be configured with the env `GEOIP_
 
 ### Usage with geoipupdate
 
-To configure [`maxmind/geoipupdate`](https://github.com/maxmind/geoipupdate) to use this proxy, make sure this proxy is available over HTTPS, then set `GEOIP_UPDATE_HOST` to the host of the HTTPS endpoint.
+To configure [`maxmind/geoipupdate`](https://github.com/maxmind/geoipupdate) to use this proxy, set `GEOIP_UPDATE_HOST` to the URL of the proxy's `updates` endpoint.
+
+Since version [v7.1.0](https://github.com/maxmind/geoipupdate/releases/tag/v7.1.0), geoipupdate supports HTTP endpoints. To configure it to use this proxy without HTTPS, set `GEOIP_UPDATE_HOST` to the host and scheme of the proxy's endpoint (e.g., `http://localhost:8080`). Note that geoipupdate defaults to HTTPS, so you must explicitly specify `http://` if the proxy is not served over HTTPS.
