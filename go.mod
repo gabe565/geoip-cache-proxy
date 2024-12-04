@@ -1,6 +1,6 @@
 module gabe565.com/geoip-cache-proxy
 
-go 1.23.3
+go 1.23.4
 
 require (
 	gabe565.com/utils v0.0.0-20241114041836-facb2857c9b1
