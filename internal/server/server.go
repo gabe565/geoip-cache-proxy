@@ -13,6 +13,7 @@ import (
 	"gabe565.com/geoip-cache-proxy/internal/server/handlers"
 	"gabe565.com/geoip-cache-proxy/internal/server/handlers/proxy"
 	geoipmiddleware "gabe565.com/geoip-cache-proxy/internal/server/middleware"
+	"gabe565.com/utils/bytefmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"golang.org/x/sync/errgroup"
@@ -72,7 +73,7 @@ func NewDownload(conf *config.Config, cache *redis.Client) *http.Server {
 		Addr:           conf.DownloadAddr,
 		Handler:        r,
 		ReadTimeout:    10 * time.Second,
-		MaxHeaderBytes: 1024 * 1024, // 1MiB
+		MaxHeaderBytes: bytefmt.MiB,
 	}
 }
 
@@ -84,7 +85,7 @@ func NewUpdates(conf *config.Config, cache *redis.Client) *http.Server {
 		Addr:           conf.UpdatesAddr,
 		Handler:        r,
 		ReadTimeout:    10 * time.Second,
-		MaxHeaderBytes: 1024 * 1024, // 1MiB
+		MaxHeaderBytes: bytefmt.MiB,
 	}
 }
 
@@ -103,7 +104,7 @@ func NewDebug(conf *config.Config, cache *redis.Client) *http.Server {
 			Addr:           conf.DebugAddr,
 			Handler:        r,
 			ReadTimeout:    10 * time.Second,
-			MaxHeaderBytes: 1024 * 1024, // 1MiB
+			MaxHeaderBytes: bytefmt.MiB,
 		}
 	}
 	return nil
