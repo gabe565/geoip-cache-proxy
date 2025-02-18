@@ -4,7 +4,6 @@ go 1.24.0
 
 require (
 	gabe565.com/utils v0.0.0-20250218053544-40f17d09c725
-	github.com/dmarkham/enumer v1.5.10
 	github.com/go-chi/chi/v5 v5.2.1
 	github.com/jedib0t/go-pretty/v6 v6.6.6
 	github.com/lmittmann/tint v1.0.7
@@ -18,6 +17,7 @@ require (
 require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.6 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/dmarkham/enumer v1.5.10 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
@@ -31,3 +31,5 @@ require (
 	golang.org/x/tools v0.29.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+tool github.com/dmarkham/enumer

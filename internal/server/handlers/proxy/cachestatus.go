@@ -1,6 +1,6 @@
 package proxy
 
-//go:generate go run github.com/dmarkham/enumer -type CacheStatus -trimprefix Cache -transform upper
+//go:generate go tool enumer -type CacheStatus -trimprefix Cache -transform upper
 
 type CacheStatus uint8
 
