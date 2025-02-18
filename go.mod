@@ -5,7 +5,7 @@ go 1.23.3
 require (
 	gabe565.com/utils v0.0.0-20250130072635-ed882da6fcdd
 	github.com/dmarkham/enumer v1.5.10
-	github.com/go-chi/chi/v5 v5.1.0
+	github.com/go-chi/chi/v5 v5.2.1
 	github.com/jedib0t/go-pretty/v6 v6.6.1
 	github.com/lmittmann/tint v1.0.7
 	github.com/redis/rueidis v1.0.49
