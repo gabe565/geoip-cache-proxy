@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"gabe565.com/utils/must"
+	"gabe565.com/utils/slogx"
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +24,7 @@ func RegisterCompletions(cmd *cobra.Command) {
 
 	must.Must(cmd.RegisterFlagCompletionFunc(FlagLogFormat,
 		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
-			return LogFormatStrings(), cobra.ShellCompDirectiveNoFileComp
+			return slogx.FormatStrings(), cobra.ShellCompDirectiveNoFileComp
 		},
 	))
 

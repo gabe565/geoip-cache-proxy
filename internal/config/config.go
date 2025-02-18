@@ -1,14 +1,14 @@
 package config
 
 import (
-	"log/slog"
-	"strings"
 	"time"
+
+	"gabe565.com/utils/slogx"
 )
 
 type Config struct {
-	logLevel  string
-	logFormat string
+	logLevel  slogx.Level
+	logFormat slogx.Format
 
 	RedisHost     string
 	RedisPort     uint16
@@ -33,8 +33,8 @@ type Config struct {
 
 func NewDefault() *Config {
 	return &Config{
-		logLevel:  strings.ToLower(slog.LevelInfo.String()),
-		logFormat: FormatAuto.String(),
+		logLevel:  slogx.LevelInfo,
+		logFormat: slogx.FormatAuto,
 
 		RedisHost: "localhost",
 		RedisPort: 6379,

@@ -14,6 +14,7 @@ import (
 	"gabe565.com/geoip-cache-proxy/internal/redis"
 	"gabe565.com/geoip-cache-proxy/internal/server/consts"
 	geoipmiddleware "gabe565.com/geoip-cache-proxy/internal/server/middleware"
+	"gabe565.com/utils/slogx"
 	"github.com/go-chi/chi/v5/middleware"
 )
 
@@ -48,10 +49,10 @@ func Proxy(conf *config.Config, cache *redis.Client, host string) http.HandlerFu
 		}()
 
 		if upstreamResp, err = cache.Get(r.Context(), upstreamReq, conf.HTTPTimeout); err == nil {
-			logger.Log(r.Context(), config.LevelTrace, "Using cached response")
+			slogx.LoggerTrace(logger, "Using cached response")
 			cacheStatus = CacheHit
 		} else if errors.Is(err, redis.ErrNotExist) {
-			logger.Log(r.Context(), config.LevelTrace, "Forwarding request to upstream")
+			slogx.LoggerTrace(logger, "Forwarding request to upstream")
 			upstreamResp, err = http.DefaultClient.Do(upstreamReq)
 			if err != nil {
 				logger.Error("Failed to forward to upstream", "error", err)
