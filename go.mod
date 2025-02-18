@@ -3,7 +3,7 @@ module gabe565.com/geoip-cache-proxy
 go 1.24.0
 
 require (
-	gabe565.com/utils v0.0.0-20250130072635-ed882da6fcdd
+	gabe565.com/utils v0.0.0-20250217005250-f306fa7738cd
 	github.com/dmarkham/enumer v1.5.10
 	github.com/go-chi/chi/v5 v5.2.1
 	github.com/jedib0t/go-pretty/v6 v6.6.6
