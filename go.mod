@@ -5,7 +5,7 @@ go 1.24.0
 require (
 	gabe565.com/utils v0.0.0-20250218053544-40f17d09c725
 	github.com/go-chi/chi/v5 v5.2.1
-	github.com/jedib0t/go-pretty/v6 v6.6.6
+	github.com/jedib0t/go-pretty/v6 v6.6.7
 	github.com/lmittmann/tint v1.0.7
 	github.com/redis/rueidis v1.0.54
 	github.com/spf13/cobra v1.9.1
