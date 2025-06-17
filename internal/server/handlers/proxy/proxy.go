@@ -18,7 +18,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-func Proxy(conf *config.Config, cache *redis.Client, host string) http.HandlerFunc {
+func Proxy(conf *config.Config, cache *redis.Client, host string) http.HandlerFunc { //nolint:gocognit
 	return func(w http.ResponseWriter, r *http.Request) {
 		u := upstreamURL(host, r, conf.TranslateIngressNginxPaths)
 		logger, ok := geoipmiddleware.LogFromContext(r.Context())

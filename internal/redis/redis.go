@@ -112,7 +112,12 @@ func (c *Client) Get(ctx context.Context, req *http.Request, httpTimeout time.Du
 	return resp, nil
 }
 
-func (c *Client) NewWriter(ctx context.Context, req *http.Request, resp *http.Response, expiration time.Duration) (io.WriteCloser, error) {
+func (c *Client) NewWriter(
+	ctx context.Context,
+	req *http.Request,
+	resp *http.Response,
+	expiration time.Duration,
+) (io.WriteCloser, error) {
 	key := FormatCacheKey(req)
 
 	locks.Lock(key)

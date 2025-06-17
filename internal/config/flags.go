@@ -50,9 +50,13 @@ func (c *Config) RegisterFlags(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&c.AccountID, FlagAccountID, c.AccountID, "MaxMind account ID")
 	cmd.Flags().StringVar(&c.LicenseKey, FlagLicenseKey, c.LicenseKey, "MaxMind license key")
 
-	cmd.Flags().DurationVar(&c.CacheDuration, FlagCacheDuration, c.CacheDuration, "Length of time to cache MaxMind response")
+	cmd.Flags().DurationVar(&c.CacheDuration, FlagCacheDuration, c.CacheDuration,
+		"Length of time to cache MaxMind response",
+	)
 
 	cmd.Flags().StringVar(&c.DebugAddr, FlagDebugAddr, c.DebugAddr, "Debug pprof listen address")
 
-	cmd.Flags().BoolVarP(&c.TranslateIngressNginxPaths, FlagTranslateIngressNginxUrls, "", true, "Automatically translate ingress-nginx's expected file names to Maxmind paths.")
+	cmd.Flags().BoolVarP(&c.TranslateIngressNginxPaths, FlagTranslateIngressNginxUrls, "", true,
+		"Automatically translate ingress-nginx's expected file names to Maxmind paths.",
+	)
 }
