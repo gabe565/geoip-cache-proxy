@@ -23,6 +23,6 @@ services:
           path: ./internal
 
   valkey:
-    image: valkey/valkey:8.1-alpine
+    image: valkey/valkey:9.0-alpine
     ports:
       - 127.0.0.1:6379:6379
