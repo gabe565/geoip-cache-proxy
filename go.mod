@@ -3,14 +3,14 @@ module gabe565.com/geoip-cache-proxy
 go 1.24.0
 
 require (
-	gabe565.com/utils v0.0.0-20250302063333-ede73b14282c
+	gabe565.com/utils v0.0.0-20260511235214-4059440fa83b
 	github.com/go-chi/chi/v5 v5.2.1
 	github.com/jedib0t/go-pretty/v6 v6.6.7
 	github.com/lmittmann/tint v1.0.7
 	github.com/redis/rueidis v1.0.55
-	github.com/spf13/cobra v1.9.1
-	github.com/spf13/pflag v1.0.6
-	github.com/stretchr/testify v1.10.0
+	github.com/spf13/cobra v1.10.1
+	github.com/spf13/pflag v1.0.10
+	github.com/stretchr/testify v1.11.1
 	golang.org/x/sync v0.11.0
 )
 
